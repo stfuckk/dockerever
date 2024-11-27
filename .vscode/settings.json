@@ -1,13 +1,4 @@
 {
-    "flake8.importStrategy": "fromEnvironment",
-    "flake8.args": [
-        "--exclude=.git,pycache,.venv,alembic",
-        "--max-line-length = 120",
-        "--max-complexity = 8",
-        "--max-function-length = 20",
-        "--use_class_attributes_order_strict_mode = True",
-        "--max-cognitive-complexity=3"
-    ]
-
-
+    "flake8.args": ["--config", "./backend/setup.cfg"],
+    "mypy-type-checker.args": ["--config", "./backend/setup.cfg"]
 }

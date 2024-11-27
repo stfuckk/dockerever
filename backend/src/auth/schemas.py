@@ -10,7 +10,6 @@ class UserBase(BaseModel):
     password: str = Field()
 
     class Config:
-        orm_mode = True
         model_config = {"from_attributes": True}
 
 

@@ -1,0 +1,6 @@
+.env
+.mypy_cache
+.venv
+.pdm-python
+.mypy_cache
+pgdata

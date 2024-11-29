@@ -1,4 +1,3 @@
-from sqlalchemy import text
 from sqlalchemy.orm import Mapped, mapped_column
 from src.database import Base, str_uniq, int_pk
 
@@ -12,12 +11,7 @@ class User(Base):
     password: Mapped[str]
 
     # Роли
-    is_user: Mapped[bool] = mapped_column(
-        default=True, server_default=text("true"), nullable=False
-    )
-    is_admin: Mapped[bool] = mapped_column(
-        default=False, server_default=text("false"), nullable=False
-    )
+    is_admin: Mapped[bool] = mapped_column(default=False)
 
     extend_existing = True
 

@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Подключение
-DB_HOST = os.getenv("DB_HOST", "host")
-DB_PORT: str = os.getenv("DB_PORT", "port")
+DB_HOST: str = os.getenv("DB_HOST", "host")
+DB_PORT: str = os.getenv("DB_PORT", "5432")
 DB_NAME: str = os.getenv("POSTGRES_DB", "dbname")
 
 # Аутентификация

@@ -1,25 +1,36 @@
 <script>
     import '../app.css';
     import NavigationBar from '$lib/global/NavigationBar.svelte';
-    import { isAuthorized } from '$lib/stores/authStore';
+    import { isAuthorized, userData } from '$lib/stores/authStore';
     import { onMount } from 'svelte';
-    import { isUserAuthorized } from '$lib/api/auth';
+    import { isUserAuthorized, getUserData } from '$lib/api/auth';
     import { goto } from "$app/navigation";
     import { page } from '$app/stores';
 
-    onMount(() => {
-        const token = localStorage.getItem("token");
-        async function checkAuthorization() {
-            if (token) {
-                const result = await isUserAuthorized(token);
-                isAuthorized.set(result);
+    let token;
 
-                if (!result && $page.url.pathname !== '/contact')
-                    goto('/login');
-            } else if ($page.url.pathname !== '/contact') goto('/login');
+    async function checkAuthorization() {
+        const result = await isUserAuthorized();
+        isAuthorized.set(result);
+        if ($isAuthorized) {
+            const data = await getUserData();
+            $userData.set(data)
         }
-        checkAuthorization();
+
+        if (!result && $page.url.pathname !== '/contact')
+            goto('/login');
+    }
+
+    onMount(() => {
+        const unsubscribe = page.subscribe(() => {
+            checkAuthorization();
+        });
+
+        return () => {
+            unsubscribe();
+        };
     });
+
 
     let { children } = $props();
     

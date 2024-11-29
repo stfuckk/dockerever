@@ -4,8 +4,15 @@
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
     import { isAuthorized } from '$lib/stores/authStore';
+    import { goto } from '$app/navigation';
 
     $: activeUrl = $page.url.pathname;
+
+    function handleLogout() {
+        isAuthorized.set(false);
+        localStorage.removeItem('token');
+        goto('/login');
+    }
 </script>
   
 
@@ -24,7 +31,7 @@
                     <DropdownItem href="/profile">Профиль</DropdownItem>
                     <DropdownItem href="/users">Пользователи и права</DropdownItem>
                     <DropdownDivider />
-                    <DropdownItem>Выйти</DropdownItem>
+                    <DropdownItem on:click={handleLogout}>Выйти</DropdownItem>
                 </Dropdown>
             {/if}
             <NavLi class="mt-2" href="/contact">Контакты</NavLi>

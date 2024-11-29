@@ -1,8 +1,10 @@
 <script>
     import { Card, Button, Label, Input, Checkbox, Helper } from 'flowbite-svelte';
-    import { loginUser } from '$lib/api/auth';
+    import { loginUser, getUserData } from '$lib/api/auth';
+    import { userData } from '$lib/stores/authStore';
     import { error } from '$lib/stores/authStore';
     import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
 
     let username = '';
     let password = '';
@@ -11,10 +13,11 @@
     async function handleSubmit(event) {
         event.preventDefault();
         loading = true;
-        error.set(null);
         try {
             const token = await loginUser(username, password);
-            window.location.href = '/';
+            const data = await getUserData();
+            userData.set(data);
+            if (token) goto('/');
         } catch (err) {
             error.set(err.message);
         } finally {

@@ -1,30 +1,61 @@
 services:
   db:
     image: postgres:latest
-    container_name: dockerever_db
+    container_name: dockerever_postgres
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      - .:/docker-entrypoint-initdb.d
+      - /dockerever/pgdata:/var/lib/postgresql/data
     environment:
+      POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "5430:5432"
     env_file:
       - ./.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - traefik-net
+
   backend:
-    container_name: restapi_backend
+    container_name: dockerever_backend
     build:
-      context: ../backend
-    volumes:
-      - ../backend/alembic:/app/alembic
-      - ../backend/alembic.ini:/app/alembic.ini
-      - ../backend/src:/app/src
-    ports:
-      - "8000:8000"
+      context: ../
+      dockerfile: ./docker/Dockerfile.backend
     env_file:
       - ./.env
+    networks:
+      - traefik-net
+
+  frontend:
+    container_name: dockerever_frontend
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.frontend
+    networks:
+      - traefik-net
+
+  dockerever-traefik:
+    image: traefik:v3.1
+    container_name: dockerever_traefik
+    ports:
+      - 0.0.0.0:80:80
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "../traefik/traefik.yml:/etc/traefik/traefik.yml:ro"
+      - "../traefik/traefik_backends.yml:/etc/traefik/backends.yml:ro"
+    networks:
+      - traefik-net
+
 
 volumes:
   pgdata:
     driver: local
+
+networks:
+  traefik-net:
+    driver: bridge

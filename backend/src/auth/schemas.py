@@ -9,7 +9,10 @@ class UserBase(BaseModel):
     last_name: str = Field()
     password: str = Field()
 
+    is_admin: bool = Field()
+
     class Config:
+        orm_mode = True
         model_config = {"from_attributes": True}
 
 
@@ -38,3 +41,9 @@ class UserAuth(BaseModel):
     password: str = Field(
         ..., min_length=5, max_length=30, description="Пароль от 5 до 30 знаков"
     )
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
+    refresh_token: str | None = None

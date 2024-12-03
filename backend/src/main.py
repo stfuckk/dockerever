@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from src.auth.router import router as auth_router
+from src.metrics.router import router as metrics_router
 from typing import AsyncGenerator
 from src.auth.models import User
 from src.database import get_db
@@ -49,3 +50,4 @@ async def index() -> dict:
 
 
 app.include_router(auth_router)
+app.include_router(metrics_router)

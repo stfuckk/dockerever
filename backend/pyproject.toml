@@ -5,7 +5,7 @@ description = "Default template for PDM package"
 authors = [
     {name = "d.kozlov", email = "d.kozlov@i-digit.ru"},
 ]
-dependencies = ["fastapi>=0.115.5", "sqlalchemy[asyncio]>=2.0.36", "python-dotenv>=1.0.1", "uvicorn>=0.32.1", "passlib[bcrypt]>=1.7.4", "python-jose>=3.3.0", "python-multipart>=0.0.17", "asyncpg>=0.30.0", "pydantic>=2.10.1", "black>=24.10.0", "alembic>=1.14.0", "psycopg2-binary>=2.9.10"]
+dependencies = ["fastapi>=0.115.5", "sqlalchemy[asyncio]>=2.0.36", "python-dotenv>=1.0.1", "uvicorn>=0.32.1", "passlib[bcrypt]>=1.7.4", "python-jose>=3.3.0", "python-multipart>=0.0.17", "asyncpg>=0.30.0", "pydantic>=2.10.1", "black>=24.10.0", "alembic>=1.14.0", "psycopg2-binary>=2.9.10", "requests>=2.32.3"]
 requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "Apache 2.0"}

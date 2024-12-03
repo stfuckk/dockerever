@@ -1,9 +1,9 @@
 <script>
     import '../app.css';
     import NavigationBar from '$lib/global/NavigationBar.svelte';
-    import { isAuthorized, userData } from '$lib/stores/authStore';
+    import { isAuthorized } from '$lib/stores/authStore';
     import { onMount } from 'svelte';
-    import { isUserAuthorized, getUserData } from '$lib/api/auth';
+    import { isUserAuthorized } from '$lib/api/auth';
     import { goto } from "$app/navigation";
     import { page } from '$app/stores';
 
@@ -12,12 +12,8 @@
     async function checkAuthorization() {
         const result = await isUserAuthorized();
         isAuthorized.set(result);
-        if ($isAuthorized) {
-            const data = await getUserData();
-            $userData.set(data)
-        }
 
-        if (!result && $page.url.pathname !== '/contact')
+        if (!result)
             goto('/login');
     }
 

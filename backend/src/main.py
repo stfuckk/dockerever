@@ -40,10 +40,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     yield
 
 
-app = FastAPI(lifespan=lifespan, docs_url="/api/docs", redoc_url="/api/redoc", openapi_url="/api/openapi.json")
+app = FastAPI(lifespan=lifespan, root_path='/api/')
 
 
-@app.get("/api/")
+@app.get("/")
 async def index() -> dict:
     return {"status": "It's working!"}
 

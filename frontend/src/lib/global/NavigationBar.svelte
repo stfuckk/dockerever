@@ -34,7 +34,6 @@
                     <DropdownItem on:click={handleLogout}>Выйти</DropdownItem>
                 </Dropdown>
             {/if}
-            <NavLi class="mt-2" href="/contact">Контакты</NavLi>
             <DropdownDivider />
             <DarkMode/>
         </NavUl>

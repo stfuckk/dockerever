@@ -31,26 +31,15 @@ services:
     networks:
       - traefik-net
 
-  frontend:
-    container_name: dockerever_frontend
+  nginx:
+    container_name: dockerever_nginx
     build:
       context: ../
-      dockerfile: ./docker/Dockerfile.frontend
-    networks:
-      - traefik-net
-
-  dockerever-traefik:
-    image: traefik:v3.1
-    container_name: dockerever_traefik
+      dockerfile: ./docker/Dockerfile.nginx
     ports:
-      - 0.0.0.0:80:80
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "../traefik/traefik.yml:/etc/traefik/traefik.yml:ro"
-      - "../traefik/traefik_backends.yml:/etc/traefik/backends.yml:ro"
+      - 80:80
     networks:
       - traefik-net
-
 
 volumes:
   pgdata:

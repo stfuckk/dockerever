@@ -1,5 +1,8 @@
 #!/bin/bash
 
+HOST_IP="172.28.186.180"
+NGINX_CONTAINER_IN_PORT="80"
+
 # Define the version of node_exporter you want to install
 VERSION="1.8.2"
 
@@ -52,7 +55,7 @@ if [ -f docker-compose.yml ]; then
     sudo docker compose down
     sudo docker rmi docker-backend
     sudo docker rmi docker-nginx
-    sudo docker compose up --build --force-recreate -d
+    sudo docker compose up --build -d
 else
     echo "Error: docker-compose.yml not found."
 fi

@@ -10,7 +10,6 @@
     async function checkAuthorization() {
         const result = await isUserAuthorized();
         isAuthorized.set(result);
-        console.log($isAuthorized);
 
         if (!result) goto('/login');
     }

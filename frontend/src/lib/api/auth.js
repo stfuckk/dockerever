@@ -24,29 +24,29 @@ export async function isUserAuthorized() {
 }
 
 export async function loginUser(username, password) {
-        const body = new URLSearchParams({
-            grant_type: 'password',
-            username: username,
-            password: password,
-        });
-        const response = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: body.toString()
-        });
-    
-        if (!response.ok) {
+    let response;
+    const body = new URLSearchParams({
+        grant_type: 'password',
+        username: username,
+        password: password,
+    });
+    response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body.toString()
+    });
+    if (!response.ok) {
+        if (response.headers.get('Content-Type')?.includes('application/json')) {
             const errorData = await response.json();
-            if (errorData.detail === 'Неверный логин или пароль') {
-                throw new Error(errorData.detail);
-            } else {
-                throw new Error('Не удалось подключиться к серверу');
-            }
+            throw new Error(errorData.detail);
+        } else {
+            throw new Error('Не удалось получить ответ от сервера');
         }
-    
-        const data = await response.json();
-        localStorage.setItem('token', data.access_token);
-        return data.access_token;
+    }
+
+    const data = await response.json();
+    localStorage.setItem('token', data.access_token);
+    return data.access_token;
 }

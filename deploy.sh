@@ -50,7 +50,8 @@ fi
 cd ./docker || exit
 if [ -f docker-compose.yml ]; then
     sudo docker compose down
-    sudo docker image prune -f
+    sudo docker rmi docker-backend
+    sudo docker rmi docker-nginx
     sudo docker compose up --build --force-recreate -d
 else
     echo "Error: docker-compose.yml not found."

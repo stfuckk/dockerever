@@ -1,11 +1,16 @@
 <script>
     import AuthForm from '$lib/users/AuthForm.svelte';
-    import { isAuthorized } from '$lib/stores/authStore';
-    import { onMount } from 'svelte';
-    import { goto } from '$app/navigation';
-    import { page } from '$app/stores';
+    import { isUserAuthorized } from '$lib/api/auth';
+    import { afterNavigate, goto } from '$app/navigation';
+
+    async function checkAuthorization() {
+        const result = await isUserAuthorized();
+        if (result) goto('/');
+    }
+
+    afterNavigate(async () => {
+        await checkAuthorization();
+    });
 </script>
 
-{#if !$isAuthorized}
-    <AuthForm />
-{/if}
+<AuthForm />

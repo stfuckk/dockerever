@@ -1,7 +1,7 @@
 <script>
     import { Card, Button, Label, Input, Checkbox, Helper } from 'flowbite-svelte';
     import { loginUser } from '$lib/api/auth';
-    import { error } from '$lib/stores/authStore';
+    import { error, isAuthorized } from '$lib/stores/authStore';
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
 
@@ -14,7 +14,9 @@
         loading = true;
         try {
             const token = await loginUser(username, password);
-            if (token) goto('/');
+            if (token) {
+                goto('/') 
+            };
         } catch (err) {
             error.set(err.message);
         } finally {

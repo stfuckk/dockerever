@@ -4,29 +4,22 @@
     import { isAuthorized } from '$lib/stores/authStore';
     import { onMount } from 'svelte';
     import { isUserAuthorized } from '$lib/api/auth';
-    import { goto } from "$app/navigation";
+    import { afterNavigate, goto } from "$app/navigation";
     import { page } from '$app/stores';
-
-    let token;
 
     async function checkAuthorization() {
         const result = await isUserAuthorized();
         isAuthorized.set(result);
+        console.log($isAuthorized);
 
-        if (!result)
-            goto('/login');
+        if (!result) goto('/login');
     }
 
-    onMount(() => {
-        const unsubscribe = page.subscribe(() => {
-            checkAuthorization();
-        });
-
-        return () => {
-            unsubscribe();
-        };
+    afterNavigate(async () => {
+        if (!$page.url.toString().includes("/login")) {
+            await checkAuthorization();
+        }
     });
-
 
     let { children } = $props();
     

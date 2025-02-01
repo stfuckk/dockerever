@@ -19,7 +19,7 @@ services:
       start_period: 10s
     restart: unless-stopped
     networks:
-      - traefik-net
+      - dockerever_network
 
   backend:
     container_name: dockerever_backend
@@ -29,7 +29,7 @@ services:
     env_file:
       - ./.env
     networks:
-      - traefik-net
+      - dockerever_network
 
   nginx:
     container_name: dockerever_nginx
@@ -39,7 +39,7 @@ services:
     ports:
       - 80:80
     networks:
-      - traefik-net
+      - dockerever_network
 
   cadvisor:
     image: google/cadvisor:latest
@@ -56,7 +56,7 @@ services:
     devices:
       - /dev/kmsg
     networks:
-      - traefik-net
+      - dockerever_network
 
   prometheus:
     image: prom/prometheus:latest
@@ -67,7 +67,7 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
-      - traefik-net
+      - dockerever_network
 
 
 volumes:
@@ -75,5 +75,5 @@ volumes:
     driver: local
 
 networks:
-  traefik-net:
+  dockerever_network:
     driver: bridge

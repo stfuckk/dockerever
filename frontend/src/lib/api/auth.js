@@ -1,20 +1,22 @@
 export async function isUserAuthorized() {
     try {
         const token = localStorage.getItem("token");
-        const response = await fetch('/api/auth/token_validate', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+        if (token) {
+            const response = await fetch('/api/auth/token_validate', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (!response.ok) {
+                return false;
             }
-        });
-
-        if (!response.ok) {
-            return false;
+            const data = await response.json();
+            return true;
         }
+        else return false;
 
-        const data = await response.json();
-        return data.status;
     } catch (error) {
         console.error('Authorization check failed:', error);
         return false;

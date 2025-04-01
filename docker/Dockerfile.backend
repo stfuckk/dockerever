@@ -1,17 +1,18 @@
 FROM python:3.12
 
-WORKDIR /app
+COPY ../backend/start.sh ./
 
-COPY ../backend/pyproject.toml ../backend/pdm.lock ./
+WORKDIR /app
+COPY ../backend/pyproject.toml /app/
+COPY ../backend/pdm.lock /app/
+
 RUN pip install pdm && pdm install
 
 ENV PATH="/app/.venv/bin:${PATH}"
 
-COPY ../backend/alembic /app/alembic
+# COPY ../backend/alembic /app/alembic
 COPY ../backend/alembic.ini /app/alembic.ini
-COPY ../backend/src /app/src
-
-COPY ../backend/entrypoint.sh /app/entrypoint.sh
-ENTRYPOINT ["/app/entrypoint.sh"]
-
-CMD ["pdm", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--reload"]
+# COPY ../backend/src /app/src
+COPY ../backend/src/init_data.py ../backend/pre_start.py ./
+ENTRYPOINT ["/start.sh"]
+# CMD ["pdm", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--reload"]

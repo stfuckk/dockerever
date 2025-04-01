@@ -1,22 +1,41 @@
 [project]
-name = "backend"
+name = "Dockerever API backend"
 version = "0.1.0"
-description = "Default template for PDM package"
+description = "Dockerever system"
 authors = [
-    {name = "d.kozlov", email = "d.kozlov@i-digit.ru"},
+    {name = "d.kozlov", email = "d.kozlov2205@mail.ru"},
 ]
-dependencies = ["fastapi>=0.115.5", "sqlalchemy[asyncio]>=2.0.36", "python-dotenv>=1.0.1", "uvicorn>=0.32.1", "passlib[bcrypt]>=1.7.4", "python-jose>=3.3.0", "python-multipart>=0.0.17", "asyncpg>=0.30.0", "pydantic>=2.10.1", "black>=24.10.0", "alembic>=1.14.0", "psycopg2-binary>=2.9.10", "requests>=2.32.3"]
-requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.115.4",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "alembic>=1.13.3",
+    "python-dotenv>=1.0.1",
+    "uvicorn>=0.31.1",
+    "passlib>=1.7.4",
+    "types-passlib>=1.7.7.20240819",
+    "python-jose>=3.3.0",
+    "python-multipart>=0.0.12",
+    "asyncpg>=0.30.0",
+    "psycopg2-binary>=2.9.10",
+    "bcrypt>=4.2.1",
+    "email-validator>=2.2.0",
+    "tenacity>=9.0.0",
+    "apscheduler>=3.11.0",
+]
+
+requires-python = ">=3.12.0"
 readme = "README.md"
 license = {text = "Apache 2.0"}
 
-
 [tool.pdm]
+python.use_venv = true
 distribution = false
 
 
-[dependency-groups]
+[tool.pdm.dev-dependencies]
 dev = [
-    "mypy>=1.13.0",
+    "pytest>=8.3.3",
     "flake8>=7.1.1",
+    "mypy>=1.14.1",
+    "black>=24.10.0",
 ]

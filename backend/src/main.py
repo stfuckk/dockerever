@@ -1,53 +1,40 @@
+import os
 from fastapi import FastAPI
-from src.auth.router import router as auth_router
-from src.metrics.router import router as metrics_router
 from typing import AsyncGenerator
-from src.auth.models import User
-from src.database import get_db
-from src.auth.utils import get_password_hash
 from sqlalchemy.future import select
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
-import os
-
-load_dotenv()
+from fastapi.middleware.cors import CORSMiddleware
+from src.utils.expired_tokens import start_scheduler
+from src.api.api_v1.api import api_router
+import src.config as settings
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    async with get_db() as db:
-        result = await db.execute(select(User))
-        users = result.scalars().all()
-
-        if not users:
-            username = os.getenv("DEFAULT_USER_USERNAME", "admin")
-            password = os.getenv("DEFAULT_USER_PASSWORD", "admin")
-            first_name = 'noname'
-            last_name = 'nolastname'
-            is_admin = True
-
-            hashed_password = get_password_hash(password)
-
-            default_user = User(
-                username=username,
-                first_name=first_name,
-                last_name=last_name,
-                password=hashed_password,
-                is_admin=is_admin
-            )
-
-            db.add(default_user)
-            await db.commit()
+    start_scheduler()
     yield
 
 
-app = FastAPI(lifespan=lifespan, root_path='/api/')
+app = FastAPI(
+    lifespan=lifespan,
+    title=settings.PROJECT_NAME,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    docs_url="/api/docs",
+)
+
+if settings.CORS_MODE == "cors":
+    app.add_middleware(
+        CORSMiddleware,  # noqa
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
-@app.get("/")
-async def index() -> dict:
-    return {"status": "It's working!"}
-
-
-app.include_router(auth_router)
-app.include_router(metrics_router)
+@app.get("/health")
+def health() -> dict:
+    return {"message": "ok!"}

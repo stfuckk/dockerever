@@ -15,4 +15,4 @@ scrape_configs:
   - job_name: 'node_exporter'
     scrape_interval: 5s
     static_configs:
-      - targets: ['172.28.186.180:9100']
+      - targets: ['172.18.6.133:9100']

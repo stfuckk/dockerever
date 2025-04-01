@@ -1,0 +1,77 @@
+{
+    "errors": {
+        "user": {
+            "username_exists":{
+                "httpStatus": 409,
+                "ruText": "Пользователь с таким именем уже существует.",
+                "enText": "The user with this username already exists in the system."
+            },
+            "user_not_exists":{
+                "httpStatus": 409,
+                "ruText": "Пользователя с таким логином не существует в системе.",
+                "enText": "The user with this username does not exist in the system"
+            },
+            "token_expired": {
+                "httpStatus": 401,
+                "ruText": "Срок действия токена истек.",
+                "enText": "Token expired."
+            }
+        },
+
+        "auth": {
+            "incorrect_credentials": {
+                "httpStatus": 401,
+                "ruText": "Неверный логин или пароль.",
+                "enText": "Incorrect login or password."
+            },
+            "inactive_user": {
+                "httpStatus": 401,
+                "ruText": "Пользователь не активирован.",
+                "enText": "Inactive user."
+            },
+            "token_create_error": {
+                "httpStatus": 500,
+                "ruText": "Ошибка при создании ключа доступа",
+                "enText": "Error creating access token"
+            },
+            "invalid_refresh_token": {
+                "httpStatus": 401,
+                "ruText": "Неверный refresh token.",
+                "enText": "Invalid refresh token."
+            },
+            "invalid_access_token": {
+                "httpStatus": 401,
+                "ruText": "Неверный access token.",
+                "enText": "Invalid access token."
+            },
+            "logout_error": {
+                "httpStatus": 500,
+                "ruText": "Ошибка при выходе.",
+                "enText": "Logout error."
+            },
+            "not_enough_permissions": {
+                "httpStatus": 403,
+                "ruText": "Недостаточно прав.",
+                "enText": "Not enough permissions"
+            }
+        },
+
+        "validators": {
+            "no_password": {
+                "httpStatus": 409,
+                "ruText": "Пароль не указан",
+                "enText": "Password not specified."
+            },
+            "wrong_password_length": {
+                "httpStatus": 401,
+                "ruText": "Пароль должен быть длиной от 5 до 25 символов.",
+                "enText": "Password must be between 5 and 25 in length."
+            },
+            "not_numeral_password": {
+                "httpStatus": 401,
+                "ruText": "Пароль должен содержать цифры.",
+                "enText": "The password must contain numbers."
+            }
+        }
+    }
+}

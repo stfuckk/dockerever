@@ -55,11 +55,11 @@ class DataSourceUser(DataSourceBase[User, UserCreateSchema, UserUpdateSchema]):
             else:
                 update_data = obj_in.model_dump(exclude_unset=True)
 
-            if not verify_password(update_data["prev_password"], db_obj.hashed_password):
+            if not verify_password(update_data["prev_password"].get_secret_value(), db_obj.hashed_password):
                 raise CoreException("errors.auth.incorrect_credentials")
 
             if "password" in update_data:
-                hashed_password = get_password_hash(update_data["password"])
+                hashed_password = get_password_hash(update_data["password"].get_secret_value())
                 del update_data["password"]
                 update_data["hashed_password"] = hashed_password
             return await super().update(db, db_obj=db_obj, obj_in=update_data)
@@ -86,7 +86,7 @@ class DataSourceUser(DataSourceBase[User, UserCreateSchema, UserUpdateSchema]):
             user = await self.get_by_username(db, username=username)
             if not user:
                 return None
-            if not verify_password(password, user.hashed_password.get_secret_value()):
+            if not verify_password(password, user.hashed_password):
                 return None
             return user
         except Exception as e:

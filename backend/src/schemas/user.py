@@ -34,6 +34,12 @@ class UserCreateSchema(UserSchema):
 
 
 class UserUpdateSchema(BaseModel):
+    username: Optional[str] = Field(
+        ...,
+        min_length=5,
+        max_length=50,
+        description="Имя пользователя, минимальная длина 5" "символа, максимальная 50",
+    )
     password: Optional[SecretStr] = Field(None, min_length=5, max_length=25, description="Пароль от 5 до 25 символов")
     prev_password: SecretStr = Field(..., min_length=5, max_length=25, description="Пароль от 5 до 25 символов")
 

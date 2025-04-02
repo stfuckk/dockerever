@@ -23,6 +23,13 @@ reusable_oauth2 = OAuth2PasswordBearer(
 )
 
 
+async def get_current_user_dependency(
+    security_scopes: SecurityScopes,
+    token: str = Depends(reusable_oauth2),
+) -> models.User:
+    return await AuthService.get_current_user(security_scopes, token)
+
+
 class AuthService:
     @staticmethod
     async def get_access_token(username: str, password: str) -> schemas.Token:
@@ -166,11 +173,10 @@ class AuthService:
     @staticmethod
     async def get_current_active_user(
         current_user: models.User = Security(
-            get_current_user,
+            get_current_user_dependency,
             scopes=[],
         ),
     ) -> models.User:
-        current_user = await current_user
         if not current_user.is_active:
             raise CoreException("errors.auth.inactive_user")
         return current_user

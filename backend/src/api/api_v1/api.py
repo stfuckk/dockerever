@@ -6,4 +6,4 @@ api_router = APIRouter()
 responses = {422: {"model": CoreMessage}}
 
 api_router.include_router(auth.router, responses=responses)
-# api_router.include_router(users.router, responses=responses)
+api_router.include_router(users.router, responses=responses)

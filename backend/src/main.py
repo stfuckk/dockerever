@@ -35,6 +35,6 @@ if settings.CORS_MODE == "cors":
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
-@app.get("/health")
+@app.get("/api/health")
 def health() -> dict:
     return {"message": "ok!"}

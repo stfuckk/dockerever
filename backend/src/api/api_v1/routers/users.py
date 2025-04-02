@@ -35,7 +35,7 @@ async def create_user(
         scopes=[Role.ADMIN["name"], Role.SUPER_ADMIN["name"]],
     ),
 ) -> schemas.User:
-    return await user_service.create_user(user_in, current_user)
+    return await user_service.create_user(user_in)
 
 
 @router.put("/me", response_model=schemas.User)
@@ -44,8 +44,7 @@ async def update_user_me(
     user_in: schemas.UserUpdateSchema,
     current_user: models.User = Depends(auth_service.get_current_active_user),
 ) -> schemas.User:
-    current_user = await current_user
-    return await user_service.update_user(current_user.id, user_in)
+    return await user_service.update_user(current_user.id, user_in, current_user)
 
 
 @router.get("/me", response_model=schemas.User)
@@ -70,5 +69,5 @@ async def update_user(
     user_id: UUID4,
     user_in: schemas.UserUpdateSchema,
     current_user: models.User = Depends(auth_service.get_current_active_user),
-) -> Any:
-    return await user_service.update_user(user_id, user_in)
+) -> schemas.User:
+    return await user_service.update_user(user_id, user_in, current_user)

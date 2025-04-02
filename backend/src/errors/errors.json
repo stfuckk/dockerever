@@ -7,9 +7,9 @@
                 "enText": "The user with this username already exists in the system."
             },
             "user_not_exists":{
-                "httpStatus": 409,
-                "ruText": "Пользователя с таким логином не существует в системе.",
-                "enText": "The user with this username does not exist in the system"
+                "httpStatus": 404,
+                "ruText": "Пользователя не существует в системе.",
+                "enText": "The user does not exist in the system"
             },
             "token_expired": {
                 "httpStatus": 401,
@@ -53,6 +53,28 @@
                 "httpStatus": 403,
                 "ruText": "Недостаточно прав.",
                 "enText": "Not enough permissions"
+            }
+        },
+        "roles": {
+            "role_does_not_exist": {
+                "httpStatus": 404,
+                "ruText": "Запрашиваемая роль не найдена.",
+                "enText": "Requested role not found."
+            },
+            "user_already_have_role": {
+                "httpStatus": 409,
+                "ruText": "Данному пользователю уже назначена эта роль.",
+                "enText": "This user has already been assigned with this role."
+            },
+            "admin_assign_not_enough_permissions": {
+                "httpStatus": 403,
+                "ruText": "Роль суперадминистратора может быть назначена только пользователями с правами суперадминистратора.",
+                "enText": "Super Admin role can be assigned only by super-admin users."
+            },
+            "role_delete_not_enough_permissions": {
+                "httpStatus": 403,
+                "ruText": "Роль может удалить только суперадминистратор.",
+                "enText": "The role can only be deleted by a super administrator."
             }
         },
 

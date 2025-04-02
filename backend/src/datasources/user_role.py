@@ -6,12 +6,12 @@ from pydantic.types import UUID4
 from src.datasources.base import DataSourceBase
 from src.datasources.role import role_datasource
 from src.models.user_role import UserRole
-from src.schemas.user_role import UserRoleCreate, UserRoleUpdate
+from src.schemas.user_role import UserRoleCreate, UserRoleUpdate, UserRoles
 from src.config import logger
 
 
 class DataSourceUserRole(DataSourceBase[UserRole, UserRoleCreate, UserRoleUpdate]):
-    async def get_by_user_id(self, db: AsyncSession, *, user_id: UUID4) -> Optional[List[UserRole]]:
+    async def get_by_user_id(self, db: AsyncSession, *, user_id: UUID4) -> Optional[UserRoles]:
         try:
             result = await db.execute(select(UserRole).filter(UserRole.user_id == user_id))
             return result.scalars().all()

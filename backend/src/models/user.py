@@ -20,6 +20,8 @@ class User(Base):
         viewonly=True,
     )
 
+    must_change_password: Mapped[Annotated[bool, mapped_column(default=False)]]
+
     def has_role(self, role_names: list[str]) -> bool:
         for role in self.roles:
             if role.name in role_names:

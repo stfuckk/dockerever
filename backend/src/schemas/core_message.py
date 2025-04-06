@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional, Any
 
 
 class CoreMessage(BaseModel):
@@ -6,6 +7,7 @@ class CoreMessage(BaseModel):
     ruText: str
     enText: str
     httpStatus: int
+    data: Optional[Any] = None
 
 
 class ErrorResponse(BaseModel):

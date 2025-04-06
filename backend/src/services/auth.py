@@ -9,6 +9,7 @@ from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from jose import jwt, JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import ValidationError
+from src.config import logger
 from src.errors.exceptions import CoreException
 
 
@@ -27,7 +28,8 @@ async def get_current_user_dependency(
     security_scopes: SecurityScopes,
     token: str = Depends(reusable_oauth2),
 ) -> models.User:
-    return await AuthService.get_current_user(security_scopes, token)
+    user = await AuthService.get_current_user(security_scopes, token)
+    return user
 
 
 class AuthService:
@@ -140,10 +142,7 @@ class AuthService:
             return {"message": "ok!"}
 
     @staticmethod
-    async def get_current_user(
-        security_scopes: SecurityScopes,
-        token: str = Depends(reusable_oauth2),
-    ) -> models.User:
+    async def get_current_user(security_scopes: SecurityScopes, token: str = Depends(reusable_oauth2)) -> models.User:
         async with get_db() as db:
             token_pair = await datasources.token_pair_datasource.get_by_access_token(db, access_token=token)
 
@@ -172,10 +171,24 @@ class AuthService:
 
     @staticmethod
     async def get_current_active_user(
-        current_user: models.User = Security(
-            get_current_user_dependency,
-            scopes=[],
-        ),
+        current_user: models.User = Security(get_current_user_dependency, scopes=[])
+    ) -> models.User:
+        if not current_user.is_active:
+            raise CoreException("errors.auth.inactive_user")
+        if current_user.must_change_password:
+            raise CoreException(
+                messageCode="errors.auth.must_change_password",
+                data={
+                    "id": str(current_user.id),
+                    "username": current_user.username,
+                    "must_change_password": True,
+                },
+            )
+        return current_user
+
+    @staticmethod
+    async def get_current_active_user_for_update(
+        current_user: models.User = Security(get_current_user_dependency, scopes=[])
     ) -> models.User:
         if not current_user.is_active:
             raise CoreException("errors.auth.inactive_user")

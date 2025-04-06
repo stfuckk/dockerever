@@ -21,7 +21,7 @@ async def login_access_token(
 
 @router.post("/test-token", response_model=schemas.User)
 async def test_token(
-    current_user: models.User = Depends(auth_service.get_current_user),
+    current_user: models.User = Depends(auth_service.get_current_active_user),
 ) -> Any:
     return current_user
 

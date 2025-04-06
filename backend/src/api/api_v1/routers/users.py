@@ -42,13 +42,15 @@ async def create_user(
 async def update_user_me(
     *,
     user_in: schemas.UserUpdateSchema,
-    current_user: models.User = Depends(auth_service.get_current_active_user),
+    current_user: models.User = Depends(auth_service.get_current_active_user_for_update),
 ) -> schemas.User:
     return await user_service.update_user(current_user.id, user_in, current_user)
 
 
 @router.get("/me", response_model=schemas.User)
-async def read_user_me(current_user: models.User = Depends(auth_service.get_current_active_user)) -> schemas.User:
+async def read_user_me(
+    current_user: models.User = Depends(auth_service.get_current_active_user),
+) -> schemas.User:
     return await user_service.get_user(current_user)
 
 

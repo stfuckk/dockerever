@@ -38,7 +38,9 @@ async def init_db(db: AsyncSession) -> None:
 
     if not user:
         user_in = schemas.UserCreateSchema(
-            username=settings.SUPER_ADMIN_USERNAME, password=settings.SUPER_ADMIN_PASSWORD.get_secret_value()
+            username=settings.SUPER_ADMIN_USERNAME,
+            password=settings.SUPER_ADMIN_PASSWORD.get_secret_value(),
+            must_change_password=True,
         )
         user = await datasources.user_datasource.create(db, obj_in=user_in)
 

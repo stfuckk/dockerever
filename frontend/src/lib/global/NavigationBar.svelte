@@ -3,14 +3,14 @@
     import { ChevronDownOutline } from 'flowbite-svelte-icons';
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
-    import { isAuthorized } from '$lib/stores/authStore';
+    import { is_authorized } from '$lib/stores/authStore';
     import { goto } from '$app/navigation';
 
     $: activeUrl = $page.url.pathname;
-
     function handleLogout() {
-        isAuthorized.set(false);
-        localStorage.removeItem('token');
+        is_authorized.set(false);
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
         goto('/login');
     }
 </script>
@@ -23,7 +23,7 @@
     <NavHamburger />
     <NavUl {activeUrl}>
         <NavLi class="mt-2" href="/" active={true}>Главная</NavLi>
-            {#if $isAuthorized}
+            {#if $is_authorized}
                 <NavLi class="mt-2 cursor-pointer">
                     Настройки<ChevronDownOutline class="w-6 h-6 ms-1 text-primary-800 dark:text-white inline" />
                 </NavLi>

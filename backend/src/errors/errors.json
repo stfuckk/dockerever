@@ -53,6 +53,16 @@
                 "httpStatus": 403,
                 "ruText": "Недостаточно прав.",
                 "enText": "Not enough permissions"
+            },
+            "same_password": {
+                "httpStatus": 401,
+                "ruText": "Новый пароль должен отличаться от старого.",
+                "enText": "The new password must be different from the old one."
+            },
+            "must_change_password": {
+                "httpStatus": 403,
+                "ruText": "Вы должны сменить пароль перед использованием системы.",
+                "enText": "You must change your password before using the system."
             }
         },
         "roles": {

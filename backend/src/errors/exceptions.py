@@ -1,5 +1,5 @@
 from src import schemas
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from fastapi import HTTPException
 
 
@@ -33,7 +33,7 @@ class MessagesGroup:
 
 
 class CoreException(HTTPException):
-    def __init__(self, messageCode: str):
+    def __init__(self, messageCode: str, data: Optional[dict] = None):
         error = messagesGroup.getMessage(messageCode)
 
         core_message = schemas.CoreMessage(
@@ -41,6 +41,7 @@ class CoreException(HTTPException):
             ruText=error["ruText"],
             enText=error["enText"],
             httpStatus=error["httpStatus"] if error["httpStatus"] else 500,
+            data=data,
         )
 
         # Подставляем HTTP-статус в ответ

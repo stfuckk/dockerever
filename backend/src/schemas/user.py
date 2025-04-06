@@ -16,6 +16,7 @@ class UserSchema(BaseModel):
 
 class UserCreateSchema(UserSchema):
     password: SecretStr = Field(..., min_length=5, max_length=25, description="Пароль от 5 до 25 символов")
+    must_change_password: Optional[bool] = False
 
     @field_validator("password")
     def validate_password(cls, v: SecretStr) -> SecretStr:
@@ -60,6 +61,7 @@ class UserInDBBase(UserSchema):
     roles: List[Role]
     created_at: datetime
     updated_at: datetime
+    must_change_password: bool
 
     class Config:
         from_attributes = True

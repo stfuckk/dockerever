@@ -31,6 +31,7 @@ class DataSourceUser(DataSourceBase[User, UserCreateSchema, UserUpdateSchema]):
             db_obj = User(
                 username=obj_in.username,
                 hashed_password=get_password_hash(obj_in.password.get_secret_value()),
+                must_change_password=obj_in.must_change_password or False,
             )
             db.add(db_obj)
             await db.flush()
@@ -48,20 +49,32 @@ class DataSourceUser(DataSourceBase[User, UserCreateSchema, UserUpdateSchema]):
         *,
         db_obj: User,
         obj_in: Union[UserUpdateSchema, Dict[str, Any]],
+        is_admin_update: bool = False,
     ) -> Optional[User]:
         try:
             if isinstance(obj_in, dict):
-                update_data = obj_in
+                update_data = obj_in.copy()
             else:
                 update_data = obj_in.model_dump(exclude_unset=True)
+            is_password_changed = "password" in update_data
 
-            if not verify_password(update_data["prev_password"].get_secret_value(), db_obj.hashed_password):
-                raise CoreException("errors.auth.incorrect_credentials")
+            if is_password_changed:
+                if not is_admin_update and "prev_password" in update_data and update_data["prev_password"]:
+                    if not verify_password(update_data["prev_password"].get_secret_value(), db_obj.hashed_password):
+                        raise CoreException("errors.auth.incorrect_credentials")
 
-            if "password" in update_data:
-                hashed_password = get_password_hash(update_data["password"].get_secret_value())
-                del update_data["password"]
+                # Проверяем, что новый пароль не совпадает с предыдущим
+                new_password = update_data["password"].get_secret_value()
+                if verify_password(new_password, db_obj.hashed_password):
+                    raise CoreException("errors.auth.same_password")
+
+                hashed_password = get_password_hash(new_password)
                 update_data["hashed_password"] = hashed_password
+                del update_data["password"]
+
+                if db_obj.must_change_password:
+                    update_data["must_change_password"] = False
+
             return await super().update(db, db_obj=db_obj, obj_in=update_data)
         except SQLAlchemyError as e:
             logger.error(f"Cannot update user: {e}")

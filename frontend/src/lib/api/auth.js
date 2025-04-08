@@ -3,7 +3,7 @@ import { getAccessToken, getRefreshToken, setTokens, clearTokens } from '$lib/ut
 
 export async function getCurrentUser() {
   const token = getAccessToken();
-  if (!token) throw new Error('Нет токена');
+  if (!token) throw new Error('Необходимо войти');
 
   const res = await fetch('/api/v1/auth/test-token', {
     method: 'POST',
@@ -44,17 +44,30 @@ export async function refreshToken() {
 }
 
 export async function isAuthorized() {
+  const token = getAccessToken();
+  if (!token) {
+    clearTokens();
+    return null;
+  }
+
   try {
     return await getCurrentUser();
   } catch (err) {
-    if (err.message.includes('401')) {
-      const refreshed = await refreshToken();
-      if (refreshed) return await getCurrentUser();
-    }
-    clearTokens();
+    const isExpired = err.message.includes('401') || err.message.includes('Неверный access token');
 
-    is_authorized.set(false);
-    user.set(null);
+    if (isExpired) {
+      const refreshed = await refreshToken();
+      if (refreshed) {
+        try {
+          return await getCurrentUser();
+        } catch {
+          clearTokens();
+          return null;
+        }
+      }
+    }
+
+    clearTokens();
     return null;
   }
 }
@@ -124,4 +137,21 @@ export async function changePassword(data, token) {
     const err = await res.json();
     throw new Error(err.detail.ruText || 'Ошибка при смене пароля');
   }
+}
+
+export async function updateUsername(data, token) {
+  const res = await fetch('/api/v1/users/me', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(data)
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err?.ruText || 'Ошибка при обновлении логина');
+  }
+  return await res.json();
 }

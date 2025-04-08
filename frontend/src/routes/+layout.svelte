@@ -4,14 +4,12 @@
     import { isAuthorized as authCheck } from '$lib/api/auth';
     import { is_authorized, user } from '$lib/stores/authStore';
     import { goto } from '$app/navigation';
-    import { page } from '$app/stores';
     import { onMount } from 'svelte';
     import { get } from 'svelte/store';
   
     let { children } = $props();
   
     onMount(async () => {
-        const path = get(page).url.pathname;
         const currentUser = await authCheck();
       
         if (!currentUser) {

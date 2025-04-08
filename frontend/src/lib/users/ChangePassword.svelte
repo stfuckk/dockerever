@@ -5,9 +5,11 @@
   import { goto } from '$app/navigation';
   import { error } from '$lib/stores/authStore';
   import { get } from 'svelte/store';
+  import { EyeOutline, EyeSlashOutline } from 'flowbite-svelte-icons';
 
   export let token;
   export let username = '';
+  let show = false;
   let newPassword = '';
   let prevPassword = '';
   let loading = false;
@@ -50,11 +52,27 @@
         <h3 class="text-xl font-medium text-gray-900 dark:text-white">Задайте новый пароль, отличный от старого</h3>
         <Label class="space-y-2">
           <span>Текущий пароль</span>
-          <Input type="password" bind:value={prevPassword} on:input={clearError} disabled={loading} placeholder="•••••••••" required />
+          <Input type={show ? 'text' : 'password'} bind:value={prevPassword} on:input={clearError} disabled={loading} placeholder="•••••••••" required>
+            <button slot="right" on:click={() => (show = !show)} class="pointer-events-auto">
+              {#if show}
+                <EyeOutline class="w-6 h-6" />
+              {:else}
+                <EyeSlashOutline class="w-6 h-6" />
+              {/if}
+            </button>
+          </Input>
         </Label>
         <Label class="space-y-2">
           <span>Новый пароль</span>
-          <Input type="password" bind:value={newPassword} on:input={clearError} disabled={loading} placeholder="•••••••••" required />
+          <Input type={show ? 'text' : 'password'} bind:value={newPassword} on:input={clearError} disabled={loading} placeholder="•••••••••" required >
+            <button slot="right" on:click={() => (show = !show)} class="pointer-events-auto">
+              {#if show}
+                <EyeOutline class="w-6 h-6" />
+              {:else}
+                <EyeSlashOutline class="w-6 h-6" />
+              {/if}
+            </button>
+          </Input>
         </Label>
         <Button type="submit" disabled={loading} class="w-full">Сменить пароль</Button>
         {#if $error}

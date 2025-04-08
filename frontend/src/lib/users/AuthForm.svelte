@@ -5,12 +5,14 @@
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
     import ChangePassword from '$lib/users/ChangePassword.svelte';
+    import { EyeOutline, EyeSlashOutline } from 'flowbite-svelte-icons';
 
     let username = '';
     let password = '';
     let loading = false;
     let mustChange = false;
     let accessToken = '';
+    let show = false;
 
     async function handleSubmit(event) {
         event.preventDefault();
@@ -50,7 +52,15 @@
         </Label>
         <Label class="space-y-2">
           <span>Пароль</span>
-          <Input type="password" bind:value={password} on:input={clearError} disabled={loading} placeholder="•••••••••" required />
+          <Input type={show ? 'text' : 'password'} bind:value={password} on:input={clearError} disabled={loading} placeholder="•••••••••" required>
+            <button type="button" slot="right" on:click={() => (show = !show)} class="pointer-events-auto">
+              {#if show}
+                <EyeOutline class="w-6 h-6" />
+              {:else}
+                <EyeSlashOutline class="w-6 h-6" />
+              {/if}
+            </button>
+          </Input>
         </Label>
         <Button type="submit" disabled={loading} class="w-full">Войти</Button>
         {#if $error}

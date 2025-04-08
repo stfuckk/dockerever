@@ -6,20 +6,22 @@
     import Toast from '$lib/global/Toast.svelte';
     import { get } from 'svelte/store';
     import { page } from '$app/stores';
+    import { isAuthorized } from '$lib/api/auth';
 
     let showToast = false;
 
-    onMount(() => {
-        let authorized = get(is_authorized);
-        let currentUser = get(user);
-
-        if (authorized && !currentUser?.must_change_password) {
-            goto('/');
-        }
-
-        const url = get(page).url;
+    onMount(async () => {
+        const url = $page.url;
         if (url.searchParams.get('reason') === 'must_change_password') {
             showToast = true;
+        }
+        const currentUser = await isAuthorized();
+        if (currentUser) {
+            is_authorized.set(true);
+            user.set(currentUser);
+            if (!currentUser.must_change_password) {
+                goto('/');
+            }
         }
     });
 </script>

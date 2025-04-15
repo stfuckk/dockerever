@@ -32,11 +32,6 @@
             loading = false;
         }
     }
-
-    function clearError() {
-        error.set(null);
-    }
-
 </script>
 
 {#if mustChange}
@@ -48,11 +43,11 @@
         <h3 class="text-xl font-medium text-gray-900 dark:text-white">Вход в систему</h3>
         <Label class="space-y-2">
           <span>Логин</span>
-          <Input type="text" bind:value={username} on:input={clearError} disabled={loading} placeholder="Ваш логин" required />
+          <Input type="text" bind:value={username} on:input={() => error.set(null)} disabled={loading} placeholder="Ваш логин" required />
         </Label>
         <Label class="space-y-2">
           <span>Пароль</span>
-          <Input type={show ? 'text' : 'password'} bind:value={password} on:input={clearError} disabled={loading} placeholder="•••••••••" required>
+          <Input type={show ? 'text' : 'password'} bind:value={password} on:input={() => error.set(null)} disabled={loading} placeholder="•••••••••" required>
             <button type="button" slot="right" on:click={() => (show = !show)} class="pointer-events-auto">
               {#if show}
                 <EyeOutline class="w-6 h-6" />

@@ -5,21 +5,16 @@ from src import schemas, models
 from src.constants.roles import Role
 from src.config import logger
 from pydantic import UUID4
-from typing import List
+from typing import List, Optional, Tuple
 
 
 class UserService:
     @staticmethod
-    async def get_users(skip: int = 0, limit: int = 100) -> List[schemas.User]:
+    async def get_users(
+        skip: int = 0, limit: int = 100, search: Optional[str] = None
+    ) -> Tuple[List[schemas.User], int]:
         async with get_db() as db:
-            users = await user_datasource.get_multi(
-                db,
-                skip=skip,
-                limit=limit,
-            )
-            if users is None:
-                return []
-            return users
+            return await user_datasource.get_multi(db, skip=skip, limit=limit, search=search)
 
     @staticmethod
     async def update_user(
@@ -72,6 +67,22 @@ class UserService:
         async with get_db() as db:
             user = await user_datasource.get(db, id=user_id)
             return user
+
+    @staticmethod
+    async def delete_user(user_id: UUID4, current_user: models.User) -> schemas.User:
+        async with get_db() as db:
+            user_to_delete = await user_datasource.get(db, id=user_id)
+            if not user_to_delete:
+                raise CoreException("errors.user.user_not_exists")
+
+            if not current_user.has_role([Role.ADMIN["name"], Role.SUPER_ADMIN["name"]]):
+                raise CoreException("errors.auth.not_enough_permissions")
+
+            if current_user.has_role([Role.ADMIN["name"]]) and user_to_delete.has_role(
+                [Role.ADMIN["name"], Role.SUPER_ADMIN["name"]]
+            ):
+                raise CoreException("errors.auth.not_enough_permissions")
+            await user_datasource.remove(db, id=user_id)
 
 
 user_service = UserService()

@@ -3,7 +3,7 @@
     import { ChevronDownOutline } from 'flowbite-svelte-icons';
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
-    import { is_authorized } from '$lib/stores/authStore';
+    import { is_authorized, user } from '$lib/stores/authStore';
     import { goto } from '$app/navigation';
     import { get } from 'svelte/store';
 
@@ -16,12 +16,8 @@
     }
 
     function checkUserAuth(event, path) {
-        if (!get(is_authorized)) {
-            event.preventDefault();
-            goto('/login');
-        } else {
-            goto(path); // кастомный переход
-        }
+        event.preventDefault();
+        goto(get(is_authorized) ? path : '/login');
     }
 </script>
   
@@ -39,7 +35,9 @@
                 </NavLi>
                 <Dropdown class="w-44 z-20">
                     <DropdownItem on:click={(e) => checkUserAuth(e, '/profile')}>Профиль</DropdownItem>
-                    <DropdownItem on:click={(e) => checkUserAuth(e, '/users')}>Пользователи и права</DropdownItem>
+                    {#if $user?.roles?.some(r => r.name === 'Admin' || r.name === 'Super Admin')}
+                        <DropdownItem on:click={(e) => checkUserAuth(e, '/users')}>Пользователи и права</DropdownItem>
+                    {/if}
                     <DropdownDivider />
                     <DropdownItem on:click={handleLogout}>Выйти</DropdownItem>
                 </Dropdown>

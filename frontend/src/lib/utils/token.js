@@ -10,10 +10,10 @@ export function getRefreshToken() {
 }
   
 export function setTokens({ access_token, refresh_token }) {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !access_token || !refresh_token) return;
     localStorage.setItem('access_token', access_token);
     localStorage.setItem('refresh_token', refresh_token);
-}
+  }
   
 export function clearTokens() {
     if (typeof window === 'undefined') return;

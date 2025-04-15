@@ -26,6 +26,8 @@
         user.set(currentUser);
         is_authorized.set(true);
     });
+
+    const currentUser = get(user);
   </script>
   
   <NavigationBar />

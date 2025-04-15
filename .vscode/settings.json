@@ -1,5 +1,8 @@
 {
     "flake8.args": ["--config", "./backend/setup.cfg"],
     "mypy-type-checker.args": ["--config", "./backend/setup.cfg"],
-    "black-formatter.args": ["--line-length", "120"]
+    "black-formatter.args": ["--line-length", "120"],
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
 }

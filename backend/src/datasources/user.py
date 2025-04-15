@@ -1,5 +1,6 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Tuple
 from sqlalchemy.orm import selectinload
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
@@ -10,6 +11,7 @@ from src.schemas.user import UserCreateSchema, UserUpdateSchema
 from src.datasources.user_role import user_role_datasource
 from src.config import logger
 from src.errors.exceptions import CoreException
+from pydantic import UUID4
 
 
 class DataSourceUser(DataSourceBase[User, UserCreateSchema, UserUpdateSchema]):
@@ -86,13 +88,23 @@ class DataSourceUser(DataSourceBase[User, UserCreateSchema, UserUpdateSchema]):
         *,
         skip: int = 0,
         limit: int = 100,
-    ) -> Optional[List[User]]:
+        search: Optional[str] = None,
+    ) -> Tuple[List[User], int]:
         try:
-            result = await db.execute(select(self.model).offset(skip).limit(limit))
-            return result.scalars().all()
+            stmt = select(self.model)
+            if search:
+                stmt = stmt.filter(self.model.username.ilike(f"%{search}%"))
+
+            total_stmt = select(func.count()).select_from(stmt.subquery())
+            total_result = await db.execute(total_stmt)
+            total = total_result.scalar()
+
+            stmt = stmt.offset(skip).limit(limit)
+            result = await db.execute(stmt)
+            return result.scalars().all(), total
         except SQLAlchemyError as e:
             logger.error(f"Cannot get list of users: {e}")
-            return None
+            return [], 0
 
     async def authenticate(self, db: AsyncSession, *, username: str, password: str) -> Optional[User]:
         try:
@@ -108,6 +120,16 @@ class DataSourceUser(DataSourceBase[User, UserCreateSchema, UserUpdateSchema]):
 
     async def is_active(self, user: User) -> bool:
         return user.is_active
+
+    async def remove(self, db: AsyncSession, *, id: UUID4) -> None:
+        try:
+            obj = await self.get(db, id=id)
+            if obj:
+                await db.delete(obj)
+                await db.commit()
+        except Exception as e:
+            logger.error(f"Cannot delete user: {e}")
+            return None
 
 
 user_datasource = DataSourceUser(User)

@@ -69,3 +69,8 @@ class UserInDBBase(UserSchema):
 
 class User(UserInDBBase):
     pass
+
+
+class UserListResponse(BaseModel):
+    users: List[User]
+    total: int

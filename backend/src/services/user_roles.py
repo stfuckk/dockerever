@@ -51,6 +51,11 @@ class UserRoleService:
             if not requested_role:
                 raise CoreException("errors.roles.role_does_not_exist")
 
+            # 1. Защита от снятия у себя роли SUPER_ADMIN
+            if user_id == current_user.id and requested_role.name == Role.SUPER_ADMIN["name"]:
+                raise CoreException("errors.roles.super_admin_cannot_remove_self")
+
+            # 2. Защита: только SUPER_ADMIN может удалять роли SUPER_ADMIN
             if requested_role.name == Role.SUPER_ADMIN["name"] and not current_user.has_role(
                 [Role.SUPER_ADMIN["name"]]
             ):

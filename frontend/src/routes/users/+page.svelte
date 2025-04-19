@@ -1,7 +1,6 @@
 <script>
   import {
     Pagination,
-    P,
     Search,
     Table,
     TableBody,
@@ -10,140 +9,260 @@
     TableHead,
     TableHeadCell,
     Button,
-    Checkbox,
-    Tooltip,
     Spinner,
+    Tooltip,
   } from "flowbite-svelte";
   import {
     UserEditOutline,
     LockOutline,
     TrashBinOutline,
     UserAddOutline,
-    SearchOutline,
     ChevronLeftOutline,
     ChevronRightOutline,
   } from "flowbite-svelte-icons";
+
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
-  import { getAllUsers } from "$lib/api/users";
+  import {
+    getAllUsers,
+    getAllRoles,
+    createUser,
+    updateUser,
+    deleteUser,
+  } from "$lib/api/users";
+  import { user as userStore } from "$lib/stores/authStore";
+  import { get, derived } from "svelte/store";
+  import { onMount } from "svelte";
+  import { error } from "$lib/stores/authStore";
+  import UserRoleCheckboxes from "$lib/users/UserRoleCheckboxes.svelte";
+  import UserModals from "$lib/users/UserModals.svelte";
 
   let users = [];
-  let searchQuery = "";
-  let limit = 2;
+  let roles = [];
   let total = 0;
+  let loading = true;
+  const limit = 5;
+
   let currentPage = 1;
-  let pages = [];
-  let loading;
+  let searchInput = "";
 
-  // Получаем текущую страницу и строку поиска из адреса
-  $: {
-    const params = $page.url.searchParams;
-    currentPage = +(params.get("page") || 1);
-  }
+  const pageIndex = derived(
+    page,
+    ($page) => +$page.url.searchParams.get("page") || 1
+  );
+  const queryText = derived(
+    page,
+    ($page) => $page.url.searchParams.get("search") || ""
+  );
 
-  // Загружаем пользователей при изменении searchQuery или currentPage
-  $: if (currentPage && searchQuery !== "undefined") {
-    console.log(currentPage, searchQuery);
-    loadUsers();
-  }
+  let selectedUser = null;
+  let modals = {
+    create: false,
+    editLogin: false,
+    editPassword: false,
+    delete: false,
+  };
 
+  onMount(() => {
+    const unsub1 = pageIndex.subscribe((val) => {
+      currentPage = val;
+      loadUsers();
+    });
+
+    const unsub2 = queryText.subscribe((val) => {
+      searchInput = val;
+      loadUsers();
+    });
+
+    return () => {
+      unsub1();
+      unsub2();
+    };
+  });
 
   async function loadUsers() {
     try {
       loading = true;
       const data = await getAllUsers({
         skip: (currentPage - 1) * limit,
-        limit: limit,
-        search: searchQuery,
+        limit,
+        search: searchInput,
       });
+
       users = data.users;
       total = data.total;
 
-      const totalPages = Math.ceil(total / limit);
-      pages = Array.from({ length: totalPages }, (_, i) => ({
-        name: i + 1,
-        href: `?page=${i + 1}`,
-        active: i + 1 === currentPage,
-      }));
-      loading = false;
+      roles = await getAllRoles();
     } catch (err) {
       console.error("Ошибка загрузки пользователей", err);
+    } finally {
+      loading = false;
     }
   }
 
   function previous() {
     if (currentPage > 1) {
-      goto(`?page=${currentPage - 1}`);
+      goto(`?page=${currentPage - 1}&search=${searchInput}`);
     }
   }
 
   function next() {
     const totalPages = Math.ceil(total / limit);
     if (currentPage < totalPages) {
-      goto(`?page=${currentPage + 1}`);
+      goto(`?page=${currentPage + 1}&search=${searchInput}`);
+    }
+  }
+
+  function search() {
+    goto(`?page=1&search=${searchInput}`);
+  }
+
+  $: pages = Array.from({ length: Math.ceil(total / limit) }, (_, i) => ({
+    name: i + 1,
+    href: `?page=${i + 1}&search=${searchInput}`,
+    active: i + 1 === currentPage,
+  }));
+
+  async function handleCreateUser(data) {
+    try {
+      await createUser(data);
+      modals.create = false;
+      await loadUsers();
+    } catch (e) {
+      error.set(e.message);
+    }
+  }
+
+  async function handleUpdateLogin(userId, newLogin, prevPassword) {
+    try {
+      await updateUser(userId, {
+        username: newLogin,
+        prev_password: "temp1",
+      });
+      modals.editLogin = false;
+      await loadUsers();
+    } catch (e) {
+      error.set(e.message);
+    }
+  }
+
+  async function handleUpdatePassword(
+    userId,
+    newLogin,
+    newPassword,
+    prevPassword
+  ) {
+    try {
+      await updateUser(userId, {
+        username: newLogin,
+        password: newPassword,
+        prev_password: "temp1",
+      });
+      modals.editPassword = false;
+    } catch (e) {
+      error.set(e.message);
+    }
+  }
+
+  async function handleDeleteUser(userId) {
+    try {
+      await deleteUser(userId);
+      modals.delete = false;
+      await loadUsers();
+    } catch (e) {
+      error.set(e.message);
     }
   }
 </script>
 
-<div class="flex justify-center mt-6 mb-6">
+<div class="w-full max-w-6xl mx-auto mt-6 mb-4 px-4">
   <Search
-    bind:value={searchQuery}
+    bind:value={searchInput}
     maxlength="32"
     class="flex gap-2 items-center"
     placeholder="Поиск по логину..."
-  ></Search>
+    on:keydown={(e) => e.key === "Enter" && search()}
+  />
 </div>
 
-<Table>
-  <TableHead>
-    <TableHeadCell>Имя пользователя</TableHeadCell>
-    <TableHeadCell>Роли</TableHeadCell>
-    <TableHeadCell>Создан</TableHeadCell>
-    <TableHeadCell>Действия</TableHeadCell>
-  </TableHead>
+<div class="w-full max-w-6xl mx-auto px-4">
+  <Table>
+    <TableHead>
+      <TableHeadCell>Имя пользователя</TableHeadCell>
+      <TableHeadCell>Роли</TableHeadCell>
+      <TableHeadCell>Создан</TableHeadCell>
+      <TableHeadCell>Действия</TableHeadCell>
+    </TableHead>
 
-  <TableBody class="divide-y">
-    {#if loading}
-      <TableBodyRow>
-        <TableBodyCell colspan="4" class="py-8">
-          <div class="flex justify-center">
-            <Spinner />
-          </div>
-        </TableBodyCell>
-      </TableBodyRow>
-    {:else}
-      {#each users as user}
+    <TableBody class="divide-y">
+      {#if loading || !get(userStore)}
         <TableBodyRow>
-          <TableBodyCell>{user.username}</TableBodyCell>
-          <TableBodyCell>
-            {#each user.roles as role}
-              <div class="flex items-center space-x-2">
-                <Checkbox checked disabled />
-                <P>{role.name}</P>
-              </div>
-            {/each}
-          </TableBodyCell>
-          <TableBodyCell>{new Date(user.created_at).toLocaleString()}</TableBodyCell>
-          <TableBodyCell class="space-x-2">
-            <Button size="xs" color="light" on:click={() => alert("Изменить логин")}>
-              <UserEditOutline class="w-6 h-6" />
-            </Button>
-            <Tooltip type="light">Изменить логин</Tooltip>
-            <Button size="xs" color="light" on:click={() => alert("Изменить пароль")}>
-              <LockOutline class="w-6 h-6" />
-            </Button>
-            <Tooltip type="light">Изменить пароль</Tooltip>
-            <Button outline size="xs" color="red" on:click={() => alert("Удалить пользователя")}>
-              <TrashBinOutline class="w-6 h-6" />
-            </Button>
-            <Tooltip type="light">Удалить пользователя</Tooltip>
+          <TableBodyCell colspan="4" class="py-8">
+            <div class="flex justify-center">
+              <Spinner />
+            </div>
           </TableBodyCell>
         </TableBodyRow>
-      {/each}
-    {/if}
-  </TableBody>
-</Table>
+      {:else}
+        {#each users as user}
+          <TableBodyRow>
+            <TableBodyCell>
+              {user.username}
+              {#if user.username === get(userStore).username}(Вы){/if}
+            </TableBodyCell>
+            <TableBodyCell>
+              <UserRoleCheckboxes {user} {roles} />
+            </TableBodyCell>
+            <TableBodyCell>
+              {new Date(user.created_at).toLocaleString()}
+            </TableBodyCell>
+            <TableBodyCell class="space-x-2">
+              <Button
+                size="xs"
+                color="light"
+                on:click={() => {
+                  selectedUser = user;
+                  modals.editLogin = true;
+                }}
+                disabled={user.username === get(userStore).username}
+              >
+                <UserEditOutline class="w-6 h-6" />
+              </Button>
+              <Tooltip type="light">Изменить логин</Tooltip>
 
+              <Button
+                size="xs"
+                color="light"
+                on:click={() => {
+                  selectedUser = user;
+                  modals.editPassword = true;
+                }}
+                disabled={user.username === get(userStore).username}
+              >
+                <LockOutline class="w-6 h-6" />
+              </Button>
+              <Tooltip type="light">Изменить пароль</Tooltip>
+
+              <Button
+                outline
+                size="xs"
+                color="red"
+                on:click={() => {
+                  selectedUser = user;
+                  modals.delete = true;
+                }}
+                disabled={user.username === get(userStore).username}
+              >
+                <TrashBinOutline class="w-6 h-6" />
+              </Button>
+              <Tooltip type="light">Удалить пользователя</Tooltip>
+            </TableBodyCell>
+          </TableBodyRow>
+        {/each}
+      {/if}
+    </TableBody>
+  </Table>
+</div>
 <div class="flex justify-center mt-4">
   <Pagination {pages} icon on:previous={previous} on:next={next}>
     <svelte:fragment slot="prev">
@@ -158,13 +277,25 @@
   </Pagination>
 </div>
 
+<!-- Кнопка добавления пользователя -->
 <div class="fixed bottom-4 right-4">
   <Button
     size="xl"
     color="blue"
     class="rounded-full p-3 shadow-lg"
-    on:click={() => alert("Добавление пользователя")}
+    on:click={() => (modals.create = true)}
   >
     <UserAddOutline class="w-8 h-8" />
   </Button>
 </div>
+
+<!-- Компонент с модалками -->
+<UserModals
+  bind:modals
+  bind:selectedUser
+  on:refresh={loadUsers}
+  onCreate={handleCreateUser}
+  onUpdateLogin={handleUpdateLogin}
+  onUpdatePassword={handleUpdatePassword}
+  onDelete={handleDeleteUser}
+/>

@@ -20,4 +20,15 @@ export function clearTokens() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
 }
+
+export async function waitForToken(timeout = 3000) {
+    const interval = 50;
+    let waited = 0;
+    while (typeof window !== 'undefined' && !localStorage.getItem('access_token')) {
+      await new Promise((r) => setTimeout(r, interval));
+      waited += interval;
+      if (waited >= timeout) break;
+    }
+  }
+  
   

@@ -12,7 +12,9 @@ class User(Base):
 
     is_active: Mapped[Annotated[bool, mapped_column(default=True)]]
 
-    user_roles: Mapped[List["UserRole"]] = relationship("UserRole", back_populates="user", lazy="selectin")
+    user_roles: Mapped[List["UserRole"]] = relationship(
+        "UserRole", back_populates="user", lazy="selectin", cascade="all, delete-orphan"
+    )
     roles: Mapped[List["Role"]] = relationship(
         "Role",
         lazy="selectin",

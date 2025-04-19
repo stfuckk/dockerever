@@ -14,6 +14,10 @@
     let accessToken = '';
     let show = false;
 
+    onMount(() => {
+        error.set(null);
+    });
+    
     async function handleSubmit(event) {
         event.preventDefault();
         loading = true;

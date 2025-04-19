@@ -15,6 +15,11 @@
                 "httpStatus": 401,
                 "ruText": "Срок действия токена истек.",
                 "enText": "Token expired."
+            },
+            "cannot_delete_self": {
+                "httpStatus": 403,
+                "ruText": "Вы не можете удалить себя.",
+                "enText": "You cannot delete yourself."
             }
         },
 
@@ -85,6 +90,11 @@
                 "httpStatus": 403,
                 "ruText": "Роль может удалить только суперадминистратор.",
                 "enText": "The role can only be deleted by a super administrator."
+            },
+            "super_admin_cannot_remove_self": {
+                "httpStatus": 403,
+                "ruText": "Суперадминистратор не может удалить себя.",
+                "enText": "Super administrator cannot remove himself."
             }
         },
 

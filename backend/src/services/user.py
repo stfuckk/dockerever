@@ -22,6 +22,11 @@ class UserService:
     ) -> schemas.User:
         async with get_db() as db:
             user = await user_datasource.get(db, id=user_id)
+            if update_data.username and update_data.username != user.username:
+                existing = await user_datasource.get_by_username(db, username=update_data.username)
+                if existing and existing.id != user_id:
+                    raise CoreException("errors.user.username_exists")
+
             if not user:
                 raise CoreException("errors.user.user_not_exists")
             if (
@@ -70,6 +75,8 @@ class UserService:
 
     @staticmethod
     async def delete_user(user_id: UUID4, current_user: models.User) -> schemas.User:
+        if user_id == current_user.id:
+            raise CoreException("errors.user.cannot_delete_self")
         async with get_db() as db:
             user_to_delete = await user_datasource.get(db, id=user_id)
             if not user_to_delete:

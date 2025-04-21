@@ -53,3 +53,66 @@ async def init_db(db: AsyncSession) -> None:
         if not user_role:
             user_role_in = schemas.UserRoleCreate(user_id=user.id, role_id=super_admin_role.id)
             await datasources.user_role_datasource.create(db, obj_in=user_role_in)
+
+
+async def __create_main_dashboard(db: AsyncSession) -> None:
+    existing = await datasources.dashboard_datasource.get_by_title(db, title="Основной серверный мониторинг")
+    if existing:
+        return
+
+    dashboard = schemas.DashboardCreate(
+        title="Основной серверный мониторинг",
+        description="Автоматический дашборд для серверных метрик",
+        system=True,
+        blocks=[
+            schemas.DashboardBlockCreate(
+                title="Загрузка CPU",
+                type="diagram",
+                prometheus_query="""
+                    100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+                """,
+                unit="%",
+            ),
+            schemas.DashboardBlockCreate(
+                title="Использование памяти",
+                type="diagram",
+                prometheus_query="""
+                    (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / 1024 / 1024 / 1024
+                """,
+                unit="ГБ",
+            ),
+            schemas.DashboardBlockCreate(
+                title="Входящий трафик сети",
+                type="diagram",
+                prometheus_query="""
+                    sum by(instance) (rate(node_network_receive_bytes_total[5m])) / 1024 / 1024
+                """,
+                unit="МБ/с",
+            ),
+            schemas.DashboardBlockCreate(
+                title="Исходящий трафик сети",
+                type="diagram",
+                prometheus_query="""
+                    sum by(instance) (rate(node_network_transmit_bytes_total[5m])) / 1024 / 1024
+                """,
+                unit="МБ/с",
+            ),
+            schemas.DashboardBlockCreate(
+                title="Использование дисков",
+                type="table",
+                prometheus_query="""
+                    node_filesystem_size_bytes{mountpoint!~"/(proc|sys|dev|run)"}
+                    - node_filesystem_free_bytes{mountpoint!~"/(proc|sys|dev|run)"}
+                """,
+                unit="используется из общего",
+            ),
+            schemas.DashboardBlockCreate(
+                title="Состояние сервисов",
+                type="table",
+                prometheus_query='up{job=~"node_exporter|cadvisor"}',
+                unit="Yes/No",
+            ),
+        ],
+    )
+
+    await datasources.dashboard_datasource.create(db, obj_in=dashboard)

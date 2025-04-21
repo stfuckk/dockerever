@@ -60,7 +60,7 @@
     }
 </script>
 
-<div class="flex justify-center mt-4">
+<div class="flex justify-center mt-32">
     <Card class="w-full max-w-2xl">
       <h3 class="text-xl font-semibold dark:text-white">Профиль</h3>
       <p class="dark:text-white"><strong>Имя пользователя:</strong> {currentUser?.username}</p>

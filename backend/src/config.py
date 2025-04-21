@@ -32,6 +32,8 @@ TIMEZONE: str = os.getenv("TIMEZONE", "Europe/Moscow")
 CORS_MODE: str = os.getenv("CORS_MODE", "no-cors")
 API_V1_STR: str = os.getenv("API_V1_STR", "/api/v1")
 
+PROMETHEUS_URL: str = os.getenv("PROMETHEUS_URL", "http://prometheus:9090")
+
 
 def get_db_url() -> str:
     return f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"

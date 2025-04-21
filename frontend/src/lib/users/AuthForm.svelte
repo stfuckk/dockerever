@@ -41,7 +41,7 @@
 {#if mustChange}
   <ChangePassword token={accessToken} username={username}/>
 {:else}
-  <div class="flex justify-center mt-4">
+  <div class="flex justify-center mt-24">
     <Card>
       <form class="flex flex-col space-y-6" on:submit|preventDefault={handleSubmit}>
         <h3 class="text-xl font-medium text-gray-900 dark:text-white">Вход в систему</h3>

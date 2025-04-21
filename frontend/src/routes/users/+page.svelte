@@ -175,7 +175,7 @@
   }
 </script>
 
-<div class="w-full max-w-6xl mx-auto mt-6 mb-4 px-4">
+<div class="flex w-full max-w-6xl mx-auto mt-32 mb-4 px-4 z-10">
   <Search
     bind:value={searchInput}
     maxlength="32"
@@ -185,7 +185,7 @@
   />
 </div>
 
-<div class="w-full max-w-6xl mx-auto px-4">
+<div class="w-full max-w-6xl mx-auto px-4 mt-4 z-10">
   <Table>
     <TableHead>
       <TableHeadCell>Имя пользователя</TableHeadCell>

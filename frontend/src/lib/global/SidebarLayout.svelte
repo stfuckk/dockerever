@@ -21,11 +21,10 @@
   $: activeUrl = $page.url.pathname;
 </script>
 
-<Sidebar class="mt-6 pl-4">
+<Sidebar class="mt-12 pl-4">
   <SidebarWrapper
     class="shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 overflow-y-auto h-full"
   >
-    <NodeSelector {nodes} bind:selectedNode />
 
     <!-- Навигация -->
     <SidebarGroup>

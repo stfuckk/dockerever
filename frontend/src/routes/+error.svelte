@@ -3,7 +3,7 @@
     import { Img, Card } from 'flowbite-svelte';
 </script>
 
-<div class="flex justify-center mt-24">
+<div class="flex justify-center mt-32">
     <Card horizontal size="md" class="text-center">
         <Img src="/error.png" alt="Error Image" draggable="false" class="w-32 h-32 mx-auto my-auto select-none" />
         <div class="flex flex-col">

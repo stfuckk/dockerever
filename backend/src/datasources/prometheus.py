@@ -12,7 +12,7 @@ class PrometheusDatasource:
 
         result = []
         for target in data:
-            if target["labels"].get("job") == "node_exporter":
+            if "node_exporter" in target["labels"].get("job"):
                 ip = target["discoveredLabels"].get("__address__")
                 # Попытка получить hostname
                 hostname = target["labels"].get("instance") or ""

@@ -42,7 +42,7 @@
 
       const values = result.data.result[0].values;
 
-      series[0].data = values.map(v => parseFloat(v[1]));
+      series[0].data = values.map(v => parseFloat(v[1]).toFixed(2));
       categories = values.map(v => {
         const d = new Date(v[0] * 1000);
         return `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;

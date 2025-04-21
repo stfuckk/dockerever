@@ -42,10 +42,8 @@ export async function authFetch(input, init = {}, retry = true) {
         user.set(newUser);
         return await authFetch(input, init, false); // повторяем только один раз
       } catch {
-        clearTokens();
+        console.log("Ошибка при получении пользователя");
       }
-    } else {
-      clearTokens();
     }
   }
 
@@ -108,7 +106,8 @@ export async function refreshTokenAndUser() {
     user.set(userData);
     return userData;
   } catch {
-    clearTokens();
+    console.logs("Не удалось обновить токен.")
+    await refreshTokenAndUser();
     return null;
   }
 }
@@ -126,7 +125,8 @@ export async function isAuthorized() {
       return userData;
     }
 
-    clearTokens();
+    console.logs("Не удалось получить пользователя:", err);
+    await isAuthorized();
     return null;
   }
 }

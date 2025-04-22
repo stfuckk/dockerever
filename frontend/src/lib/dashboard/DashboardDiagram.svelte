@@ -9,29 +9,31 @@
   export let unit;
 
   let chartOptions = {};
-  let errorMessage = "";
-  let interval;
-
-  let series = [
-    {
-      name: unit || "Значение",
-      data: [],
-      color: "#1A56DB"
-    }
-  ];
+  let series = [{ name: unit || "Значение", data: [], color: "#1A56DB" }];
   let categories = [];
+  let errorMessage = "";
+  let loading = true;
+  let interval;
+  let lastHostname = null;
+
+  $: $selected_node, query, fetchMetrics();
 
   async function fetchMetrics() {
     try {
-      const node = get(selected_node);
-      if (!node) throw new Error("Не выбран сервер");
+      if (!$selected_node) throw new Error("Не выбран сервер");
+
+      // Показываем загрузку ТОЛЬКО при смене сервера
+      if (lastHostname !== $selected_node) {
+        loading = true;
+        lastHostname = $selected_node;
+      }
 
       const end = Math.floor(Date.now() / 1000);
       const start = end - 60 * 5;
       const step = 30;
 
       const res = await authFetch(
-        `/api/v1/prometheus/range?query=${encodeURIComponent(query)}&instance=${encodeURIComponent(node.hostname)}&start=${start}&end=${end}&step=${step}`
+        `/api/v1/prometheus/range?query=${encodeURIComponent(query)}&instance=${encodeURIComponent($selected_node)}&start=${start}&end=${end}&step=${step}`
       );
       const result = await res.json();
 
@@ -55,10 +57,7 @@
           toolbar: { show: false },
           fontFamily: "Inter, sans-serif"
         },
-        stroke: {
-          width: 4,
-          curve: "smooth"
-        },
+        stroke: { width: 4, curve: "smooth" },
         grid: {
           show: true,
           strokeDashArray: 4,
@@ -87,20 +86,23 @@
       errorMessage = "";
     } catch (err) {
       errorMessage = err.message || "Ошибка загрузки";
-      console.error(err);
+    } finally {
+      loading = false;
     }
   }
 
   onMount(() => {
-    fetchMetrics();
-    interval = setInterval(fetchMetrics, 5000);
+    fetchMetrics(); // первая загрузка
+    interval = setInterval(fetchMetrics, 5000); // обновление по таймеру
   });
 
   onDestroy(() => clearInterval(interval));
 </script>
 
 <Card class="dark:bg-gray-800">
-  {#if errorMessage}
+  {#if loading}
+    <p class="text-sm text-gray-400">Загрузка...</p>
+  {:else if errorMessage}
     <p class="text-sm text-red-500 dark:text-red-400">Ошибка: {errorMessage}</p>
   {:else if chartOptions?.chart}
     <Chart options={chartOptions} />

@@ -278,7 +278,7 @@
 </div>
 
 <!-- Кнопка добавления пользователя -->
-<div class="fixed bottom-4 right-4">
+<div class="fixed bottom-4 right-4 mb-16">
   <Button
     size="xl"
     color="blue"

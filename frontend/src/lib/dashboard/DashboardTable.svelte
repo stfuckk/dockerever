@@ -8,16 +8,34 @@
   export let unit;
 
   let rows = [];
+  let loading = true;
+  let errorMessage = "";
+  let lastHostname = null;
 
-  onMount(async () => {
-    const node = get(selected_node);
-    const instance = node?.hostname;
+  $: $selected_node, query, fetchTable();
 
-    const url = `/api/v1/prometheus?query=${encodeURIComponent(query)}${instance ? `&instance=${encodeURIComponent(instance)}` : ""}`;
-    const res = await authFetch(url);
-    const result = await res.json();
-    rows = result.data.result;
-  });
+  async function fetchTable() {
+    try {
+      if (!$selected_node) throw new Error("Не выбран сервер");
+
+      if (lastHostname !== $selected_node) {
+        loading = true;
+        lastHostname = $selected_node;
+      }
+
+      const instance = $selected_node;
+      const url = `/api/v1/prometheus?query=${encodeURIComponent(query)}&instance=${encodeURIComponent(instance)}`;
+      const res = await authFetch(url);
+      const result = await res.json();
+
+      rows = result.data.result;
+      errorMessage = "";
+    } catch (err) {
+      errorMessage = err.message || "Ошибка загрузки";
+    } finally {
+      loading = false;
+    }
+  }
 
   function formatBytes(bytes) {
     const sizes = ["B", "KB", "MB", "GB", "TB"];
@@ -27,6 +45,11 @@
   }
 </script>
 
+{#if loading}
+  <p class="text-sm text-gray-400">Загрузка...</p>
+{:else if errorMessage}
+  <p class="text-sm text-red-500 dark:text-red-400">Ошибка: {errorMessage}</p>
+{:else}
 <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
   <thead
     class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
@@ -50,3 +73,4 @@
     {/each}
   </tbody>
 </table>
+{/if}

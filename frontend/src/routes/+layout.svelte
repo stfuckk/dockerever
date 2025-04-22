@@ -10,18 +10,20 @@
   import { get } from "svelte/store";
   import MobileNav from "$lib/global/MobileNav.svelte";
   import NodeSelector from "$lib/global/NodeSelector.svelte";
+  import { getNodes } from "$lib/api/dashboards";
 
   let { children } = $props();
   let nodes = $state([]);
 
   onMount(async () => {
-    const res = await authFetch("/api/v1/nodes");
-    nodes = await res.json();
+    nodes = await getNodes();
 
     // Загрузка из localStorage или первый из списка
     const saved = localStorage.getItem("selected_node");
-    const parsed = saved ? JSON.parse(saved) : nodes[0];
-    selected_node.set(parsed);
+    if (!saved) {
+      localStorage.setItem("selected_node", JSON.stringify(nodes[0]));
+    }
+    selected_node.set(JSON.parse(saved));
 
     const currentUser = await authCheck();
 
@@ -38,14 +40,6 @@
 
     user.set(currentUser);
     is_authorized.set(true);
-  });
-
-  // Автосохранение выбранного узла
-  $effect(() => {
-    const node = get(selected_node);
-    if (node) {
-      localStorage.setItem("selected_node", JSON.stringify(node));
-    }
   });
 </script>
 

@@ -26,7 +26,7 @@
     <div
       class="grid gap-6 grid-cols-1 md:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3"
     >
-      {#each dashboard.blocks as block (block.id + "-" + $selected_node?.ip)}
+      {#each dashboard.blocks as block (block.id + "-" + $selected_node?.hostname)}
         <DashboardBlockRenderer {block} />
       {/each}
     </div>

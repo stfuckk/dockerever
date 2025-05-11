@@ -10,7 +10,7 @@ export async function getAllUsers({ skip = 0, limit = 10, search = "" } = {}) {
   return await res.json();
 }
 
-export async function getAllRoles({ skip = 0, limit = 10 } = {}) {
+export async function getAllRoles({ skip = 0, limit = 100 } = {}) {
   const res = await authFetch(`/api/v1/roles?skip=${skip}&limit=${limit}`);
   if (!res.ok) throw new Error("Ошибка при получении ролей");
   return await res.json();
@@ -56,7 +56,6 @@ export async function deleteUser(userId) {
   }
   return true;
 }
-
 
 export async function assignUserRole(userId, roleId) {
   const res = await authFetch(`/api/v1/user-roles`, {

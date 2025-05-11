@@ -106,7 +106,7 @@ export async function refreshTokenAndUser() {
     user.set(userData);
     return userData;
   } catch {
-    console.logs("Не удалось обновить токен.")
+    console.log("Не удалось обновить токен.");
     await refreshTokenAndUser();
     return null;
   }
@@ -125,8 +125,7 @@ export async function isAuthorized() {
       return userData;
     }
 
-    console.logs("Не удалось получить пользователя:", err);
-    await isAuthorized();
+    console.log("Не удалось получить пользователя:", err);
     return null;
   }
 }

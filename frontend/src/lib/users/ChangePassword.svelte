@@ -9,7 +9,8 @@
 
   export let token;
   export let username = "";
-  let show = false;
+  let show1 = false;
+  let show2 = false;
   let newPassword = "";
   let prevPassword = "";
   let loading = false;
@@ -43,13 +44,9 @@
       loading = false;
     }
   }
-
-  function clearError() {
-    error.set(null);
-  }
 </script>
 
-<div class="flex justify-center mt-4 mt-32">
+<div class="flex justify-center mt-32">
   <Card>
     <form class="flex flex-col space-y-6" on:submit={handleSubmit}>
       <h3 class="text-xl font-medium text-gray-900 dark:text-white">
@@ -58,19 +55,20 @@
       <Label class="space-y-2">
         <span>Текущий пароль</span>
         <Input
-          type={show ? "text" : "password"}
+          type={show1 ? "text" : "password"}
           bind:value={prevPassword}
-          on:input={clearError}
+          on:input={() => error.set(null)}
           disabled={loading}
           placeholder="•••••••••"
           required
         >
           <button
+            type="button"
             slot="right"
-            on:click={() => (show = !show)}
+            on:click={() => (show1 = !show1)}
             class="pointer-events-auto"
           >
-            {#if show}
+            {#if show1}
               <EyeOutline class="w-6 h-6" />
             {:else}
               <EyeSlashOutline class="w-6 h-6" />
@@ -81,19 +79,20 @@
       <Label class="space-y-2">
         <span>Новый пароль</span>
         <Input
-          type={show ? "text" : "password"}
+          type={show2 ? "text" : "password"}
           bind:value={newPassword}
-          on:input={clearError}
+          on:input={() => error.set(null)}
           disabled={loading}
           placeholder="•••••••••"
           required
         >
           <button
+            type="button"
             slot="right"
-            on:click={() => (show = !show)}
+            on:click={() => (show2 = !show2)}
             class="pointer-events-auto"
           >
-            {#if show}
+            {#if show2}
               <EyeOutline class="w-6 h-6" />
             {:else}
               <EyeSlashOutline class="w-6 h-6" />

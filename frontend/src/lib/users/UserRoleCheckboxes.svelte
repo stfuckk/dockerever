@@ -1,9 +1,10 @@
 <script>
+  import { onMount } from "svelte";
+  import { assignUserRole, removeUserRole, getAllRoles } from "$lib/api/users";
   import { Checkbox } from "flowbite-svelte";
-  import { assignUserRole, removeUserRole } from "$lib/api/users";
 
   export let user;
-  export let roles = [];
+  let roles = [];
 
   function hasRole(roleName) {
     return user.roles.some((r) => r.name === roleName);
@@ -20,6 +21,14 @@
       console.error("Ошибка при изменении роли:", err);
     }
   }
+
+  onMount(async () => {
+    try {
+      roles = await getAllRoles();
+    } catch (err) {
+      console.error("Ошибка загрузки ролей:", err);
+    }
+  });
 </script>
 
 {#each roles as role}

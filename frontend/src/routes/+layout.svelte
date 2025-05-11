@@ -16,15 +16,6 @@
   let nodes = $state([]);
 
   onMount(async () => {
-    nodes = await getNodes();
-
-    // Загрузка из localStorage или первый из списка
-    const saved = localStorage.getItem("selected_node");
-    if (!saved) {
-      localStorage.setItem("selected_node", JSON.stringify(nodes[0]));
-    }
-    selected_node.set(JSON.parse(saved));
-
     const currentUser = await authCheck();
 
     if (!currentUser) {
@@ -34,49 +25,53 @@
     }
 
     if (currentUser.must_change_password) {
+      is_authorized.set(false);
       goto("/login?reason=must_change_password");
       return;
     }
 
     user.set(currentUser);
     is_authorized.set(true);
+    nodes = await getNodes();
+
+    // Загрузка из localStorage или первый из списка
+    const saved = localStorage.getItem("selected_node");
+    if (!saved) {
+      localStorage.setItem("selected_node", JSON.stringify(nodes[0]));
+    }
+    selected_node.set(JSON.parse(saved));
   });
 </script>
 
 <NavigationBar />
 
+<!-- Desktop NodeSelector -->
 {#if $is_authorized}
-  <!-- Sidebar -->
-  <div class="hidden md:block fixed z-9998 overflow-y-auto w-96 mt-8 h-96">
-    <SidebarLayout />
-  </div>
-
-  <!-- NodeSelector desktop -->
-  <div class="hidden md:block fixed z-9999 w-auto mt-4 pl-4">
+  <div class="mt-16 md:mt-24 z-[9998] px-4">
     <NodeSelector {nodes} />
   </div>
 
-  <!-- NodeSelector mobile -->
-  <div class="md:hidden fixed z-9999 w-[95%] mt-4 top-14 pl-4">
-    <NodeSelector {nodes} />
-  </div>
-
+  <!-- Mobile nav -->
   <div class="md:hidden">
     <MobileNav />
   </div>
 {/if}
 
-<!-- Контент -->
+<!-- Sidebar -->
 {#if $is_authorized}
-  <div class="hidden md:block ml-96 w-auto">
-    {@render children()}
-  </div>
-{:else}
-  <div class="hidden md:block w-auto">
-    {@render children()}
+  <div class="fixed hidden md:block w-96 h-96 overflow-y-auto">
+    <SidebarLayout />
   </div>
 {/if}
 
-<div class="md:hidden pl-2">
+<!-- Контент -->
+<div class="md:ml-72">
   {@render children()}
 </div>
+
+<style>
+  :global(body) {
+    background-image: radial-gradient(#ff0000 0.65px, #2bff0000 0.65px);
+    background-size: 13px 13px;
+  }
+</style>

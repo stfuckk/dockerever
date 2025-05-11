@@ -32,16 +32,16 @@
 </script>
 
 <Navbar
-  class="border-b fixed top-0 start-0 z-[1000] bg-white dark:bg-gray-900 w-full"
+  class="border-b fixed top-0 start-0 z-[9999] bg-white dark:bg-gray-900 w-full"
 >
-<button on:click={(e) => checkUserAuth(e, "/")}>
-  <NavBrand class="cursor-pointer">
-    <span
-      class="self-center whitespace-nowrap text-xl font-semibold dark:text-white border-b"
-      >DockerEver</span
-    >
-  </NavBrand>
-</button>
+  <button on:click={(e) => checkUserAuth(e, "/")}>
+    <NavBrand class="cursor-pointer">
+      <span
+        class="self-center whitespace-nowrap text-xl font-semibold dark:text-white border-b"
+        >DockerEver</span
+      >
+    </NavBrand>
+  </button>
   <NavHamburger />
   <NavUl {activeUrl}>
     <NavLi

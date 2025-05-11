@@ -38,7 +38,6 @@
   import UserModals from "$lib/users/UserModals.svelte";
 
   let users = [];
-  let roles = [];
   let total = 0;
   let loading = true;
   const limit = 5;
@@ -91,8 +90,6 @@
 
       users = data.users;
       total = data.total;
-
-      roles = await getAllRoles();
     } catch (err) {
       console.error("Ошибка загрузки пользователей", err);
     } finally {
@@ -175,18 +172,18 @@
   }
 </script>
 
-<div class="flex w-full max-w-6xl mx-auto mt-32 mb-4 px-4 z-10">
+<div class="w-full max-w-6xl z-10 mt-8 px-2">
   <Search
     bind:value={searchInput}
     maxlength="32"
-    class="flex gap-2 items-center"
+    class="gap-2 items-center"
     placeholder="Поиск по логину..."
     on:keydown={(e) => e.key === "Enter" && search()}
   />
 </div>
 
-<div class="w-full max-w-6xl mx-auto px-4 mt-4 z-10">
-  <Table>
+<div class="w-full max-w-6xl mt-4 px-2 z-10">
+  <Table class="border border-slate-300 dark:border-slate-600">
     <TableHead>
       <TableHeadCell>Имя пользователя</TableHeadCell>
       <TableHeadCell>Роли</TableHeadCell>
@@ -211,7 +208,7 @@
               {#if user.username === get(userStore).username}(Вы){/if}
             </TableBodyCell>
             <TableBodyCell>
-              <UserRoleCheckboxes {user} {roles} />
+              <UserRoleCheckboxes {user} />
             </TableBodyCell>
             <TableBodyCell>
               {new Date(user.created_at).toLocaleString()}

@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 PROJECT_NAME: str = os.getenv("PROJECT_NAME", "FastAPI Auth Service")
 
-
 DB_USER: str = os.getenv("POSTGRES_USER", "dockerever")
 DB_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "password")
 DB_HOST: str = os.getenv("DB_HOST", "host")

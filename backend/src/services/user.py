@@ -3,7 +3,6 @@ from src.datasources.user import user_datasource
 from src.db.database import get_db
 from src import schemas, models
 from src.constants.roles import Role
-from src.config import logger
 from pydantic import UUID4
 from typing import List, Optional, Tuple
 

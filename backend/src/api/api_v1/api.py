@@ -1,4 +1,14 @@
-from src.api.api_v1.routers import auth, users, roles, user_roles, nodes, dashboards, prometheus
+from src.api.api_v1.routers import (
+    auth,
+    users,
+    roles,
+    user_roles,
+    nodes,
+    dashboards,
+    prometheus,
+    docker,
+    dashboard_blocks,
+)
 from fastapi import APIRouter
 from src.schemas.core_message import CoreMessage
 
@@ -11,4 +21,6 @@ api_router.include_router(roles.router, responses=responses)
 api_router.include_router(user_roles.router, responses=responses)
 api_router.include_router(nodes.router, responses=responses)
 api_router.include_router(dashboards.router, responses=responses)
+api_router.include_router(dashboard_blocks.router, responses=responses)
 api_router.include_router(prometheus.router, responses=responses)
+api_router.include_router(docker.router, responses=responses)

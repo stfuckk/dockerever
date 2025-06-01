@@ -1,5 +1,7 @@
 <script>
   import { onMount } from "svelte";
+  import { get } from "svelte/store";
+  import { page } from "$app/stores";
   import { selected_node } from "$lib/stores/selected_node";
   import {
     Table,
@@ -31,6 +33,7 @@
   let loading = $state(true);
   let loadError = $state("");
 
+  // Пришел ли из URL параметр ?search=…
   let searchQuery = $state("");
 
   // Для логов
@@ -198,6 +201,12 @@
   }
 
   onMount(() => {
+    // Проверяем, есть ли в URL параметр ?search=…
+    const params = get(page).url.searchParams;
+    const fromSearch = params.get("search") || "";
+    if (fromSearch.trim()) {
+      searchQuery = fromSearch;
+    }
     loadContainers();
   });
 </script>
@@ -422,11 +431,6 @@
 
 <!-- Модалка для логов -->
 <Modal bind:open={showLogsModal} size="lg" placement="center" showClose={false}>
-  <!-- 
-    Поскольку showClose={false}, Flowbite не будет рендерить свой «X». 
-    Чтобы гарантировать, что появится ровно один крестик, 
-    мы переопределяем слот header ниже.
-  -->
   <svelte:fragment slot="header">
     <div class="flex justify-between items-center w-full px-4 py-2">
       <h3 class="text-xl font-medium text-gray-900 dark:text-white">
@@ -437,25 +441,18 @@
 
   <div class="p-4">
     <div class="mb-4 grid grid-cols-2 gap-4">
-      <!-- Первая ячейка (столбец 1, строка 1) -->
       <div>
         <Label>Дата с:</Label>
         <Datepicker bind:value={startDate} dateFormat="Y-m-d" />
       </div>
-
-      <!-- Вторая ячейка (столбец 2, строка 1) -->
       <div>
         <Label>Дата до:</Label>
         <Datepicker bind:value={endDate} dateFormat="Y-m-d" />
       </div>
-
-      <!-- Третья ячейка (столбец 1, строка 2) -->
       <div>
         <Label>Время с:</Label>
         <Input type="time" bind:value={startTime} />
       </div>
-
-      <!-- Четвёртая ячейка (столбец 2, строка 2) -->
       <div>
         <Label>Время до:</Label>
         <Input type="time" bind:value={endTime} />
@@ -486,7 +483,7 @@
 <!-- Модалка для терминала -->
 <Modal bind:open={showTermModal} size="lg" placement="center" showClose={false}>
   <svelte:fragment slot="header">
-    <div class="flex justify-between items-center w-full px-4 py-2 0">
+    <div class="flex justify-between items-center w-full px-4 py-2">
       <h3 class="text-xl font-medium text-gray-900 dark:text-white">
         Терминал: {activeContainer?.name}
       </h3>

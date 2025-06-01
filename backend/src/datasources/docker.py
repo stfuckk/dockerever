@@ -1,6 +1,7 @@
 import docker
 from docker.errors import APIError
 from typing import Optional
+from datetime import datetime
 
 
 class DockerDatasource:
@@ -77,6 +78,139 @@ class DockerDatasource:
         container = self.client.containers.get(container_id=container_id)
         result = container.exec_run(cmd)
         return result.output.decode(errors="ignore")
+
+    def list_images(self) -> list:
+        images = self.client.images.list()
+        result = []
+        for img in images:
+            # У многих образов может быть несколько тегов, возьмём первый или id
+            tag = img.tags[0] if img.tags else img.id
+            result.append({"id": img.id, "repo_tag": tag, "created": datetime.fromtimestamp(img.attrs["Created"])})
+        return result
+
+    def remove_image(self, image_id: str) -> None:
+        # force=True — удаляет, даже если контейнеры всё ещё используют этот образ
+        self.client.images.remove(image=image_id, force=True)
+
+    # 1.1.2. Networks
+    def list_networks(self) -> list:
+        networks = self.client.networks.list()
+        result = []
+        for net in networks:
+            result.append(
+                {
+                    "id": net.id,
+                    "name": net.name,
+                    "driver": net.attrs.get("Driver", ""),
+                    "containers": net.attrs.get("Containers", {}),  # словарь подключённых контейнеров
+                }
+            )
+        return result
+
+    def remove_network(self, network_id: str) -> None:
+        net = self.client.networks.get(network_id)
+        net.remove()
+
+    def get_containers_by_network(self, network_id: str) -> list:
+        """
+        Возвращает массив объектов вида {'id': ..., 'name': ...}
+        для тех контейнеров, которые подключены к данной сети.
+        """
+        net = self.client.networks.get(network_id)
+        containers_info = []
+        conts = net.attrs.get("Containers", {})  # { <ctr_id>: { ... } }
+        for cid, meta in conts.items():
+            try:
+                c = self.client.containers.get(cid)
+                containers_info.append({"id": c.id, "name": c.name, "status": c.status})
+            except docker.errors.NotFound:
+                continue
+        return containers_info
+
+    # ---------------------------
+    # Список образов
+    # ---------------------------
+    def list_images(self) -> list:
+        images = self.client.images.list()
+        result = []
+        for img in images:
+            # У многих образов может быть несколько тегов, возьмём первый или id
+            tag = img.tags[0] if img.tags else img.id
+            # img.attrs["Created"] – это UNIX-время в секундах (или ISO-строка),
+            # преобразуем в datetime
+            created_ts = img.attrs.get("Created")
+            try:
+                # Если Created — строка ISO, то datetime.fromisoformat
+                created_dt = (
+                    datetime.fromisoformat(created_ts)
+                    if isinstance(created_ts, str)
+                    else datetime.fromtimestamp(created_ts)
+                )
+            except Exception:
+                # на всякий случай fallback в текущее время
+                created_dt = datetime.now()
+
+            result.append(
+                {"id": img.id, "repo_tag": tag, "created": created_dt.isoformat()}  # передадим ISO-строку на фронт
+            )
+        return result
+
+    def remove_image(self, image_id: str) -> None:
+        self.client.images.remove(image=image_id, force=True)
+
+    # ---------------------------
+    # Сети
+    # ---------------------------
+    def list_networks(self) -> list:
+        networks = self.client.networks.list()
+        result = []
+        for net in networks:
+            result.append(
+                {
+                    "id": net.id,
+                    "name": net.name,
+                    "driver": net.attrs.get("Driver", ""),
+                    "containers": net.attrs.get("Containers", {}),
+                }
+            )
+        return result
+
+    def remove_network(self, network_id: str) -> None:
+        net = self.client.networks.get(network_id)
+        net.remove()
+
+    def get_containers_by_network(self, network_id: str) -> list:
+        net = self.client.networks.get(network_id)
+        containers_info = []
+        conts = net.attrs.get("Containers", {})
+        for cid, meta in conts.items():
+            try:
+                c = self.client.containers.get(cid)
+                containers_info.append({"id": c.id, "name": c.name, "status": c.status})
+            except docker.errors.NotFound:
+                continue
+        return containers_info
+
+    # ---------------------------
+    # Томa
+    # ---------------------------
+    def list_volumes(self) -> list:
+        vols = self.client.volumes.list()
+        result = []
+        for v in vols:
+            result.append(
+                {
+                    "name": v.name,
+                    "created_at": v.attrs.get("CreatedAt", ""),
+                    "mountpoint": v.attrs.get("Mountpoint", ""),
+                    "scope": v.attrs.get("Scope", ""),
+                }
+            )
+        return result
+
+    def remove_volume(self, volume_name: str) -> None:
+        vol = self.client.volumes.get(volume_name)
+        vol.remove(force=True)
 
 
 docker_datasource = DockerDatasource()

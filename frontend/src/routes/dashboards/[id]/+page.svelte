@@ -77,10 +77,11 @@
     } catch {}
   }
 
-  // ===== Загрузка контейнеров =====
+  // ===== Загрузка контейнеров (с учётом фильтра) =====
+  // теперь getContainers принимает строку фильтра — containerSearch.trim()
   async function loadContainers() {
     try {
-      const res = await getContainers("");
+      const res = await getContainers(containerSearch.trim());
       containersList = res.containers || [];
       containersMap = {};
       for (const c of containersList) {
@@ -109,7 +110,7 @@
       dashboard = await getDashboardByTitle(dashboardTitle);
       let fetched = dashboard.blocks || [];
 
-      // Загрузим контейнеры, чтобы заполнить containersMap
+      // Загрузим контейнеры для блоков, чтобы заполнить containersMap
       for (const b of fetched) {
         if (b.container_id && !containersMap[b.container_id]) {
           await loadContainers();
@@ -228,8 +229,8 @@
 
   // ===== Lifecycle =====
   onMount(async () => {
-    // Изначально: загрузка контейнеров + структура + первые метрики
-    await loadContainers();
+    // Изначально: загрузка пустого списка контейнеров + структура + первые метрики
+    await loadContainers(); // загрузим все контейнеры (без фильтра)
     await loadDashboardStructure();
     await refreshMetricsData();
     intervalId = setInterval(refreshMetricsData, 5000);
@@ -259,14 +260,15 @@
   let formMetricType = "";
   let formTitle = "";
   let formError = "";
-  let containerSearch = "";
+  let containerSearch = ""; // Строка поиска внутри модалки
 
   function openAddModal() {
     formContainerId = "";
     formMetricType = "";
     formTitle = "";
     formError = "";
-    containerSearch = "";
+    containerSearch = ""; // очистим строку поиска
+    loadContainers(); // загрузим полный список контейнеров
     showAddModal = true;
   }
 
@@ -346,6 +348,7 @@
     formTitle = block.title || "";
     formError = "";
     containerSearch = "";
+    loadContainers(); // чтобы загрузить (и обновить) список контейнеров при редактировании
     showEditModal = true;
   }
 
@@ -603,9 +606,9 @@
     </Label>
 
     <div class="flex justify-end space-x-2 pt-2">
-      <Button color="gray" on:click={() => (showAddModal = false)}
-        >Отмена</Button
-      >
+      <Button color="gray" on:click={() => (showAddModal = false)}>
+        Отмена
+      </Button>
       <Button
         on:click={(e) => {
           e.preventDefault();
@@ -676,9 +679,9 @@
     </Label>
 
     <div class="flex justify-end space-x-2 pt-2">
-      <Button color="gray" on:click={() => (showEditModal = false)}
-        >Отмена</Button
-      >
+      <Button color="gray" on:click={() => (showEditModal = false)}>
+        Отмена
+      </Button>
       <Button
         on:click={(e) => {
           e.preventDefault();

@@ -37,6 +37,7 @@
       const response = await getNodes();
       // API может возвращать либо { nodes: [...] }, либо сразу массив
       nodes = response.nodes ?? response;
+      nodesLoaded = true;
     } catch (e) {
       console.error("Ошибка при получении списка узлов:", e);
       nodes = [];

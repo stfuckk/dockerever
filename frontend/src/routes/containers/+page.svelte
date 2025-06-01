@@ -356,14 +356,15 @@
               >
                 <div class="grid grid-cols-1 gap-1">
                   <Button
+                    size="xs"
                     outline={true}
                     color={cont.status === "running" ? "red" : "green"}
                     on:click={() => confirmAction("stop", cont)}
                   >
                     {#if cont.status === "running"}
-                      <PauseOutline class="mr-1 w-4 h-4" /> Остановить
+                      <PauseOutline class="mr-1 w-4 h-4" /> Стоп
                     {:else}
-                      <PlayOutline class="mr-1 w-4 h-4" /> Запустить
+                      <PlayOutline class="mr-1 w-4 h-4" /> Старт
                     {/if}
                   </Button>
 
@@ -376,11 +377,12 @@
                   </Button>
 
                   <Button
+                    size="xs"
                     outline={true}
                     color="blue"
                     on:click={() => openTerminal(cont)}
                   >
-                    <TerminalOutline class="mr-1 w-4 h-4" /> Терминал
+                    <TerminalOutline class="mr-1 w-4 h-4" /> Команда
                   </Button>
 
                   <Button

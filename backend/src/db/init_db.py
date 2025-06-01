@@ -111,12 +111,6 @@ async def __create_main_dashboard(db: AsyncSession) -> None:
                 unit="используется из общего",
                 metric_type="disk",
             ),
-            schemas.DashboardBlockCreate(
-                title="Состояние сервисов",
-                type="table",
-                prometheus_query="up",
-                unit="Yes/No",
-            ),
         ],
     )
 

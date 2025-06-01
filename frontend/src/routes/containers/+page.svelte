@@ -316,7 +316,7 @@
                   />
                   <button
                     class="absolute right-0 top-1/2 -translate-y-1/2 p-[-2] text-gray-500 hover:text-gray-700"
-                    on:click={() => copyId(cont.id)}
+                    onclick={() => copyId(cont.id)}
                   >
                     {#if copySuccess[cont.id]}
                       <CheckOutline class="w-4 h-4 text-blue-600" />

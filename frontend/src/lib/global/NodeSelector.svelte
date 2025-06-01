@@ -1,27 +1,59 @@
 <script>
   import { Select } from "flowbite-svelte";
   import { selected_node } from "$lib/stores/selected_node";
-  import { get } from "svelte/store";
 
   export let nodes = [];
 
-  let current = get(selected_node) || nodes[0];
-  selected_node.set(current);
+  // текущий hostname
+  let selectedValue = "";
+  // список опций для <Select>
+  let items = [];
 
-  function select(node) {
-    selected_node.set(node);
-    localStorage.setItem("selected_node", JSON.stringify(node));
-    current = node;
+  // Как только придут nodes, один раз заполняем items и инициализируем selectedValue
+  $: if (nodes.length > 0 && items.length === 0) {
+    // собрать items из nodes
+    items = nodes.map((n) => ({
+      value: n.hostname,
+      name: `${n.hostname} (${n.ip})`,
+    }));
+
+    // попробуем прочитать из localStorage
+    let saved = null;
+    try {
+      saved = JSON.parse(localStorage.getItem("selected_node"));
+    } catch {
+      localStorage.removeItem("selected_node");
+    }
+
+    // ищем сначала по hostname, потом просто первую ноду
+    const initialNode =
+      (saved && nodes.find((n) => n.hostname === saved.hostname)) || nodes[0];
+
+    selectedValue = initialNode.hostname;
+    selected_node.set(initialNode);
+    localStorage.setItem("selected_node", JSON.stringify(initialNode));
+  }
+
+  // При каждом изменении selectedValue — обновляем стор и localStorage
+  $: if (selectedValue) {
+    const node = nodes.find((n) => n.hostname === selectedValue);
+    if (node) {
+      selected_node.set(node);
+      localStorage.setItem("selected_node", JSON.stringify(node));
+    }
   }
 </script>
 
-<Select
-  class="text-gray-900 dark:text-white bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
-  placeholder="Выбор сервера"
-  items={nodes.map((n) => ({
-    value: n.hostname,
-    name: `${n.hostname || "Без имени"} (${n.ip})`,
-  }))}
-  bind:value={current}
-  on:change={() => select(current)}
-/>
+{#if items.length > 0}
+  <Select
+    {items}
+    bind:value={selectedValue}
+    class="text-gray-900 dark:text-white bg-white dark:bg-gray-800
+           border border-gray-300 dark:border-gray-600 focus:ring-blue-500
+           focus:border-blue-500"
+  />
+{:else}
+  <div class="text-gray-500 dark:text-gray-400 text-sm">
+    Ожидание списка серверов…
+  </div>
+{/if}

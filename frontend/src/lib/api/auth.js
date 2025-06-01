@@ -5,49 +5,122 @@ import {
   setTokens,
   clearTokens,
 } from "$lib/utils/token";
+import { goto } from "$app/navigation";
 
 let isRefreshing = false;
+let pendingRequests = [];
 
+/**
+ * Обёртка для fetch, которая:
+ * 1) Добавляет Authorization: Bearer <access_token>
+ * 2) При 401 или invalid_access_token делает refreshToken() и повторяет запрос один раз
+ * 3) Если после этого снова 401 — очищает токены и редиректит на /login
+ */
 export async function authFetch(input, init = {}, retry = true) {
+  // Если сейчас идёт refreshToken, ждём его, чтобы взять уже обновлённый токен
+  if (isRefreshing) {
+    await new Promise((resolve) => pendingRequests.push(resolve));
+  }
+
   const token = getAccessToken();
   const headers = {
     ...(init.headers || {}),
-    Authorization: `Bearer ${token}`,
+    Authorization: token ? `Bearer ${token}` : "",
   };
 
-  const res = await fetch(input, {
-    ...init,
-    headers,
-  });
-
-  if (res.ok) return res;
-
-  let data = null;
+  let res;
   try {
-    data = await res.clone().json(); // чтобы можно было прочитать тело повторно
-  } catch {}
-
-  const isInvalidToken =
-    data?.detail?.code === "errors.auth.invalid_access_token";
-
-  if (isInvalidToken && retry && !isRefreshing) {
-    isRefreshing = true;
-    const refreshed = await refreshToken();
-    isRefreshing = false;
-
-    if (refreshed) {
-      try {
-        const newUser = await getCurrentUser();
-        is_authorized.set(true);
-        user.set(newUser);
-        return await authFetch(input, init, false); // повторяем только один раз
-      } catch {
-        console.log("Ошибка при получении пользователя");
-      }
-    }
+    res = await fetch(input, { ...init, headers });
+  } catch (networkError) {
+    throw new Error("Сетевая ошибка: " + networkError.message);
   }
 
-  const errorText = data?.detail?.ruText || "Ошибка запроса";
+  // Если сервер вернул OK — сразу отдаём ответ
+  if (res.ok) {
+    return res;
+  }
+
+  // Попробуем прочитать JSON, чтобы найти code === "errors.auth.invalid_access_token"
+  let data = null;
+  try {
+    data = await res.clone().json();
+  } catch {
+    // не JSON или пусто
+  }
+
+  const isInvalidToken =
+    res.status === 401 ||
+    data?.detail?.code === "errors.auth.invalid_access_token" ||
+    data?.detail?.code === "errors.auth.expired_access_token";
+
+  if (isInvalidToken && retry) {
+    // Если ещё не обновляем токен, запускаем refresh
+    if (!isRefreshing) {
+      isRefreshing = true;
+      try {
+        const refresh_token = getRefreshToken();
+        let refreshed = false;
+
+        if (refresh_token) {
+          const refreshRes = await fetch("/api/v1/auth/refresh-token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refresh_token }),
+          });
+          if (refreshRes.ok) {
+            const newTokens = await refreshRes.json();
+            setTokens(newTokens);
+            refreshed = true;
+          }
+        }
+
+        isRefreshing = false;
+        // Уведомляем все ожидающие запросы, что refresh завершён
+        pendingRequests.forEach((r) => r());
+        pendingRequests = [];
+
+        if (refreshed) {
+          // Пытаемся получить текущего пользователя и поменять состояние
+          try {
+            const newUser = await getCurrentUser();
+            is_authorized.set(true);
+            user.set(newUser);
+          } catch {
+            // Если даже getCurrentUser не прошёл — оставляем просто обновлённый токен
+          }
+
+          // Повторяем исходный запрос один раз (retry=false)
+          const newToken = getAccessToken();
+          const newHeaders = {
+            ...(init.headers || {}),
+            Authorization: newToken ? `Bearer ${newToken}` : "",
+          };
+          const retryRes = await fetch(input, { ...init, headers: newHeaders });
+          if (retryRes.ok) {
+            return retryRes;
+          }
+        }
+      } catch {
+        // Ошибка при попытке refreshToken()
+        isRefreshing = false;
+        pendingRequests.forEach((r) => r());
+        pendingRequests = [];
+      }
+    } else {
+      // Если refresh уже в процессе, подождём завершения, а затем повторим authFetch
+      await new Promise((resolve) => pendingRequests.push(resolve));
+      return authFetch(input, init, false);
+    }
+
+    // Если мы оказались здесь, значит refresh не помог или повторный запрос вернул не OK
+    clearTokens();
+    is_authorized.set(false);
+    goto("/login");
+    throw new Error("Сессия истекла, требуется вход заново.");
+  }
+
+  // Во всех остальных случаях возвращаем текст ошибки
+  const errorText = data?.detail?.ruText || `Ошибка ${res.status}`;
   throw new Error(errorText);
 }
 

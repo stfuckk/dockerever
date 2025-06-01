@@ -20,26 +20,34 @@ class PrometheusDatasource:
         return result
 
     def _inject_instance(self, query: str, instance: str) -> str:
-        if not instance or f'instance="{instance}"' in query:
+        if not instance:
             return query
-
-        # Ищем выражения внутри скобок после sum by(...) (
-        if match := re.search(r"\b(sum|avg|max|min)\s+by\([^)]*\)\s*\(([^()]+)\)", query):
-            metric_expr = match.group(2)
-            if "{" in metric_expr:
-                metric_expr = re.sub(r"\{", f'{{instance="{instance}", ', metric_expr, count=1)
-            else:
-                metric_expr = re.sub(r"(\w+)", r'\1{instance="' + instance + '"}', metric_expr, count=1)
-
-            return query.replace(match.group(2), metric_expr)
-
-        return query
+        # Если есть label-селектор {...}, то вставляем instance в первый
+        if "{" in query:
+            return re.sub(r"\{", f'{{instance="{instance}",', query, count=1)
+        # Иначе просто добавляем лейбл
+        return f'{query}{{instance="{instance}"}}'
 
     async def query(self, query: str, instance: str = "") -> dict:
         query = self._inject_instance(query, instance)
 
         async with httpx.AsyncClient() as client:
             res = await client.get(f"{PROMETHEUS_URL}/api/v1/query", params={"query": query})
+        return res.json()
+
+    async def query_range(
+        self,
+        query: str,
+        instance: str,
+        start: int,
+        end: int,
+        step: int,
+    ) -> dict:
+        params = {"query": query, "start": start, "end": end, "step": step}
+        if instance:
+            params["instance"] = instance
+        async with httpx.AsyncClient() as client:
+            res = await client.get(f"{PROMETHEUS_URL}/api/v1/query_range", params=params)
         return res.json()
 
 

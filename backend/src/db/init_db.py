@@ -72,6 +72,7 @@ async def __create_main_dashboard(db: AsyncSession) -> None:
                     100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
                 """,
                 unit="%",
+                metric_type="cpu",
             ),
             schemas.DashboardBlockCreate(
                 title="Использование памяти",
@@ -80,6 +81,7 @@ async def __create_main_dashboard(db: AsyncSession) -> None:
                     (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / 1024 / 1024 / 1024
                 """,
                 unit="ГБ",
+                metric_type="memory",
             ),
             schemas.DashboardBlockCreate(
                 title="Входящий трафик сети",
@@ -88,6 +90,7 @@ async def __create_main_dashboard(db: AsyncSession) -> None:
                     sum by(instance) (rate(node_network_receive_bytes_total[5m])) / 1024 / 1024
                 """,
                 unit="МБ/с",
+                metric_type="network",
             ),
             schemas.DashboardBlockCreate(
                 title="Исходящий трафик сети",
@@ -96,6 +99,7 @@ async def __create_main_dashboard(db: AsyncSession) -> None:
                     sum by(instance) (rate(node_network_transmit_bytes_total[5m])) / 1024 / 1024
                 """,
                 unit="МБ/с",
+                metric_type="network",
             ),
             schemas.DashboardBlockCreate(
                 title="Использование дисков",
@@ -105,11 +109,12 @@ async def __create_main_dashboard(db: AsyncSession) -> None:
                     - node_filesystem_free_bytes{mountpoint!~"/(proc|sys|dev|run)"}
                 """,
                 unit="используется из общего",
+                metric_type="disk",
             ),
             schemas.DashboardBlockCreate(
                 title="Состояние сервисов",
                 type="table",
-                prometheus_query='up{job=~"node_exporter|cadvisor"}',
+                prometheus_query="up",
                 unit="Yes/No",
             ),
         ],

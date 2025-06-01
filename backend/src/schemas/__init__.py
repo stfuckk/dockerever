@@ -10,5 +10,7 @@ from .dashboard import (
     DashboardBase,
     DashboardBlock,
     DashboardBlockBase,
+    DashboardUpdate,
     DashboardBlockCreate,
+    DashboardBlockUpdate,
 )

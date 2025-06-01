@@ -3,6 +3,7 @@ from sqlalchemy import ForeignKey
 from src.db.database import Base
 from pydantic import UUID4
 from typing import Optional
+from src.models.user import User
 
 
 class Dashboard(Base):
@@ -12,11 +13,12 @@ class Dashboard(Base):
     description: Mapped[str] = mapped_column(default="", nullable=True)
     system: Mapped[bool] = mapped_column(default=False)
 
+    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
+    user: Mapped["User"] = relationship("User", backref="dashboards")
+
     blocks: Mapped[list["DashboardBlock"]] = relationship(
         "DashboardBlock", back_populates="dashboard", cascade="all, delete-orphan"
     )
-
-    user_id: Mapped[UUID4] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
 
 
 class DashboardBlock(Base):

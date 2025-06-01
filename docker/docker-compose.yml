@@ -74,6 +74,7 @@ services:
     restart: always
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - /dockerever_prometheus_data/:/prometheus/
     networks:
       - dockerever_network
 

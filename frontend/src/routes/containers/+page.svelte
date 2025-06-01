@@ -354,7 +354,7 @@
               <TableBodyCell
                 class="px-2 py-1 border border-gray-200 dark:border-gray-700"
               >
-                <div class="grid grid-cols-4 gap-1">
+                <div class="grid grid-cols-1 gap-1">
                   <Button
                     outline={true}
                     color={cont.status === "running" ? "red" : "green"}
